@@ -2,6 +2,9 @@
 
 SupplyFlow is a full-stack supply chain management application designed to help small businesses manage inventory, suppliers, and purchase orders.
 
+# Authors
+Rohan Kumar and Patrick Tarumbwa 
+
 ## Core Features
 - Inventory management
 - Supplier management
