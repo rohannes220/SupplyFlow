@@ -96,8 +96,13 @@ export function validateOrder(body) {
   const customerName = checkText(body.customerName, 'customerName', 'Customer name', errors);
   const customerCity = checkText(body.customerCity, 'customerCity', 'Customer city', errors);
 
+  const isBlank = (v) =>
+    v === undefined || v === null || (typeof v === 'string' && v.trim() === '');
+
   const state = normalizeUsState(customerState);
-  if (!state) {
+  if (isBlank(customerState)) {
+    errors.push({ field: 'customerState', message: 'Customer state is required' });
+  } else if (!state) {
     errors.push({
       field: 'customerState',
       message:
@@ -106,7 +111,9 @@ export function validateOrder(body) {
   }
 
   const phone = normalizeUsPhone(customerPhone);
-  if (!phone) {
+  if (isBlank(customerPhone)) {
+    errors.push({ field: 'customerPhone', message: 'Customer phone number is required' });
+  } else if (!phone) {
     errors.push({
       field: 'customerPhone',
       message:

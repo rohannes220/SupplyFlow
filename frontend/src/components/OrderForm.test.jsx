@@ -54,10 +54,8 @@ describe('OrderForm', () => {
     expect(screen.getByText('Order amount is required')).toBeInTheDocument();
     expect(screen.getByText('Customer name is required')).toBeInTheDocument();
     expect(screen.getByText('Customer city is required')).toBeInTheDocument();
-    expect(screen.getByText(/customer state must be a us state/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/customer phone must be a valid 10-digit us number/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Customer state is required')).toBeInTheDocument();
+    expect(screen.getByText('Customer phone number is required')).toBeInTheDocument();
     expect(screen.getByLabelText(/vendor id/i)).toHaveAttribute('aria-invalid', 'true');
   });
 
@@ -75,7 +73,9 @@ describe('OrderForm', () => {
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByText('Vendor ID must be a positive whole number')).toBeInTheDocument();
     expect(screen.getByText('Order amount must have at most 2 decimal places')).toBeInTheDocument();
-    expect(screen.getByText(/international orders are not accepted/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/customer phone must be a valid 10-digit us number/i),
+    ).toBeInTheDocument();
   });
 
   it('clears a field error as soon as it is corrected', async () => {
