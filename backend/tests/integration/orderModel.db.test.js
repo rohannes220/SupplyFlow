@@ -59,4 +59,12 @@ describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
     await expect(model.create({ ...order, customerPhone: '442079460958' })).rejects.toThrow();
     await expect(model.create({ ...order, orderAmount: 0 })).rejects.toThrow();
   });
+
+  it('accepts orders from US territories', async () => {
+    for (const customerState of ['PR', 'GU', 'VI', 'AS', 'MP']) {
+      await expect(model.create({ ...order, customerState })).resolves.toMatchObject({
+        customerState,
+      });
+    }
+  });
 });

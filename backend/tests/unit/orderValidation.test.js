@@ -83,11 +83,14 @@ describe('validateOrderInput', () => {
       },
     );
 
-    it.each(["Mary O'Neil", 'Jean-Luc Picard', 'J. R. Smith'])('accepts %j', (customerName) => {
-      expect(validateOrderInput({ ...validOrderBody, customerName }).customerName).toBe(
-        customerName,
-      );
-    });
+    it.each(["Mary O'Neil", 'Jean-Luc Picard', 'J. R. Smith', 'José Álvarez', 'Nguyễn Văn An'])(
+      'accepts %j',
+      (customerName) => {
+        expect(validateOrderInput({ ...validOrderBody, customerName }).customerName).toBe(
+          customerName,
+        );
+      },
+    );
   });
 
   describe('customerCity', () => {
@@ -95,11 +98,14 @@ describe('validateOrderInput', () => {
       expect(fieldsWithErrors({ ...validOrderBody, customerCity })).toEqual(['customerCity']);
     });
 
-    it.each(['St. Louis', "Coeur d'Alene", 'Winston-Salem'])('accepts %j', (customerCity) => {
-      expect(validateOrderInput({ ...validOrderBody, customerCity }).customerCity).toBe(
-        customerCity,
-      );
-    });
+    it.each(['St. Louis', "Coeur d'Alene", 'Winston-Salem', 'San Germán', 'Hagåtña'])(
+      'accepts %j',
+      (customerCity) => {
+        expect(validateOrderInput({ ...validOrderBody, customerCity }).customerCity).toBe(
+          customerCity,
+        );
+      },
+    );
   });
 
   describe('customerState (no international orders)', () => {
@@ -108,13 +114,22 @@ describe('validateOrderInput', () => {
       ['DC', 'DC'],
       ['New York', 'NY'],
       ['  north carolina ', 'NC'],
+      ['PR', 'PR'],
+      ['Puerto Rico', 'PR'],
+      ['guam', 'GU'],
+      ['U.S. Virgin Islands', 'VI'],
+      ['American Samoa', 'AS'],
+      ['Northern Mariana Islands', 'MP'],
     ])('normalizes %j to %s', (customerState, expected) => {
       expect(validateOrderInput({ ...validOrderBody, customerState }).customerState).toBe(expected);
     });
 
-    it.each(['ON', 'Ontario', 'XX', 'England', '', 12])('rejects %j', (customerState) => {
-      expect(fieldsWithErrors({ ...validOrderBody, customerState })).toEqual(['customerState']);
-    });
+    it.each(['ON', 'Ontario', 'BC', 'XX', 'England', 'Jamaica', '', 12])(
+      'rejects %j',
+      (customerState) => {
+        expect(fieldsWithErrors({ ...validOrderBody, customerState })).toEqual(['customerState']);
+      },
+    );
   });
 
   describe('customerPhone (no international orders)', () => {
@@ -124,12 +139,21 @@ describe('validateOrderInput', () => {
       ['404.555.0123', '4045550123'],
       ['+1 404 555 0123', '4045550123'],
       ['1-404-555-0123', '4045550123'],
+      ['787-555-0123', '7875550123'], // Puerto Rico
+      ['671-555-0123', '6715550123'], // Guam
+      ['340-555-0123', '3405550123'], // US Virgin Islands
+      ['800-555-0123', '8005550123'], // toll-free
     ])('normalizes %j', (customerPhone, expected) => {
       expect(validateOrderInput({ ...validOrderBody, customerPhone }).customerPhone).toBe(expected);
     });
 
     it.each([
       '+44 20 7946 0958',
+      '416-555-0123', // Toronto: +1 but Canada
+      '+1 604 555 0123', // Vancouver
+      '876-555-0123', // Jamaica: +1 but not US
+      '809-555-0123', // Dominican Republic
+      '441-555-0123', // Bermuda
       '555-0123',
       '040-555-0123',
       '404-155-0123',
