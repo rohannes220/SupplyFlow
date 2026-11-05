@@ -1,0 +1,12 @@
+{
+  "name": "supplyflow",
+  "private": true,
+  "scripts": {
+    "lint": "pnpm --dir backend lint",
+    "test": "pnpm --dir backend test",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}
