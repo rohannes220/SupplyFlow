@@ -5,7 +5,15 @@ export default defineConfig({
     environment: 'node',
     coverage: {
       provider: 'v8',
-      include: ['services/**', 'utils/**', 'controllers/**', 'routes/**', 'middleware/**'],
+      allowExternal: true,
+      include: [
+        '../shared/**',
+        'services/**',
+        'utils/**',
+        'controllers/**',
+        'routes/**',
+        'middleware/**',
+      ],
       thresholds: { 'services/**': { lines: 80, functions: 80, branches: 80, statements: 80 } },
     },
   },

@@ -1,4 +1,4 @@
--- Orders: domestic (US-only) customer orders placed against a vendor.
+-- Orders: domestic customer orders (50 states, DC, US territories) placed against a vendor.
 CREATE TABLE IF NOT EXISTS orders (
   order_id       SERIAL PRIMARY KEY,
   -- TODO(#4): add REFERENCES vendors(vendor_id) once the vendors table exists.
@@ -9,7 +9,9 @@ CREATE TABLE IF NOT EXISTS orders (
   customer_state CHAR(2)        NOT NULL CHECK (customer_state IN (
     'AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS',
     'KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC',
-    'ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'
+    'ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY',
+    -- US territories
+    'AS','GU','MP','PR','VI'
   )),
   customer_phone CHAR(10)       NOT NULL CHECK (customer_phone ~ '^[2-9][0-9]{2}[2-9][0-9]{6}$'),
   status         VARCHAR(20)    NOT NULL DEFAULT 'Draft'
