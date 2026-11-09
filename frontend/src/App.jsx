@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import Layout from './components/Layout.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import RegisterPage from './pages/RegisterPage.jsx';
 import OrdersPage from './pages/OrdersPage.jsx';
 
 /** Every route under this one requires login and renders inside the sidebar layout. */
@@ -22,6 +23,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/" element={<OrdersPage />} />
             <Route path="/orders" element={<OrdersPage />} />

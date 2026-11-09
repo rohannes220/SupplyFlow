@@ -30,6 +30,15 @@ export function login(email, password) {
   });
 }
 
+/** Resolves to { token, user } for a new employee account. Throws ApiError (409 if email taken). */
+export function register(name, email, password) {
+  return request('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password }),
+  });
+}
+
 /** Resolves to the user the token belongs to. Throws ApiError (401 for a bad token). */
 export function getMe(token) {
   return request('/api/auth/me', {
