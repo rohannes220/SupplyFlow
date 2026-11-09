@@ -24,3 +24,17 @@ Run pnpm commands from the repository root; use workspace filters for package-sp
 
 ## Course
 CS6983 - Generative AI, Northeastern University
+
+## Running locally
+Requires Node 20+, pnpm and PostgreSQL 16.
+
+```bash
+pnpm install
+cp backend/.env.example backend/.env   # then set DATABASE_URL
+export $(grep -v '^#' backend/.env | xargs)
+pnpm --filter supplyflow-backend migrate
+pnpm dev:api    # API on http://localhost:4000
+pnpm dev:web    # UI on http://localhost:5173 (proxies /api to the API)
+```
+
+`pnpm lint` and `pnpm test` run checks for every package. Set `TEST_DATABASE_URL` to also run the PostgreSQL model tests.

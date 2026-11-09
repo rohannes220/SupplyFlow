@@ -1,0 +1,9 @@
+{
+  "name": "@supplyflow/shared",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./orderRules": "./orderRules.js",
+    "./usLocations": "./usLocations.js"
+  }
+}
