@@ -39,3 +39,17 @@ export function createOrder(input) {
     body: JSON.stringify(input),
   });
 }
+
+export function updateOrderStatus(orderId, status) {
+  return request(`/api/orders/${orderId}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+}
+
+export function deleteOrder(orderId) {
+  return request(`/api/orders/${orderId}`, {
+    method: 'DELETE',
+  });
+}

@@ -17,6 +17,11 @@ Rohan Kumar and Patrick Tarumbwa
 - [UI Mockups](docs/supplyflow-mockups.png)
 - [AI Development Instructions](AGENTS.md)
 
+## Workspace Layout
+This project uses pnpm workspaces: `frontend/` contains the React application, `backend/` contains the Express API, and `shared/` contains shared utilities. Project documentation is in `docs/`.
+
+Run pnpm commands from the repository root; use workspace filters for package-specific scripts.
+
 ## Course
 CS6983 - Generative AI, Northeastern University
 

@@ -22,6 +22,12 @@ function fakeApi(orders = [existing]) {
       ...input,
       status: 'Draft',
     })),
+    updateOrderStatus: vi.fn().mockImplementation(async (id, status) => ({
+      ...existing,
+      orderId: id,
+      status,
+    })),
+    deleteOrder: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -83,5 +89,67 @@ describe('OrdersPage', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('updates an order status via the update modal', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi();
+    render(<OrdersPage api={api} />);
+    await screen.findByText('Mike Johnson');
+
+    await user.click(screen.getByRole('button', { name: /update/i }));
+    const dialog = screen.getByRole('dialog', { name: /update order #1 status/i });
+    expect(dialog).toBeInTheDocument();
+
+    const select = within(dialog).getByLabelText(/order status/i);
+    await user.selectOptions(select, 'Shipped');
+    await user.click(within(dialog).getByRole('button', { name: /update status/i }));
+
+    expect(api.updateOrderStatus).toHaveBeenCalledWith(1, 'Shipped');
+    expect(await screen.findByText(/order #1 status updated to shipped/i)).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('deletes an order after the verification process', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi();
+    render(<OrdersPage api={api} />);
+    await screen.findByText('Mike Johnson');
+
+    await user.click(screen.getByRole('button', { name: /delete/i }));
+    const dialog = screen.getByRole('dialog', { name: /verification required/i });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveTextContent(/permanently deleted from the system/i);
+
+    await user.click(within(dialog).getByRole('button', { name: /yes, delete order/i }));
+    expect(api.deleteOrder).toHaveBeenCalledWith(1);
+    expect(await screen.findByText(/order #1 was successfully deleted/i)).toBeInTheDocument();
+    expect(screen.queryByText('Mike Johnson')).not.toBeInTheDocument();
+  });
+
+  it('groups orders from lowest to highest and highest to lowest', async () => {
+    const user = userEvent.setup();
+    const twoOrders = [
+      { ...existing, orderId: 1, orderAmount: 500, customerName: 'Low Amount' },
+      { ...existing, orderId: 2, orderAmount: 5000, customerName: 'High Amount' },
+    ];
+    render(<OrdersPage api={fakeApi(twoOrders)} />);
+    await screen.findByText('Low Amount');
+
+    // Click Group Orders ↑ (Lowest to Highest)
+    await user.click(screen.getByRole('button', { name: /group orders ↑/i }));
+    let rows = screen.getAllByRole('row');
+    expect(within(rows[1]).getByText('Low Amount')).toBeInTheDocument();
+    expect(within(rows[2]).getByText('High Amount')).toBeInTheDocument();
+
+    // Click Group Orders ↓ (Highest to Lowest)
+    await user.click(screen.getByRole('button', { name: /group orders ↓/i }));
+    rows = screen.getAllByRole('row');
+    expect(within(rows[1]).getByText('High Amount')).toBeInTheDocument();
+    expect(within(rows[2]).getByText('Low Amount')).toBeInTheDocument();
+
+    // Click Show All Orders
+    await user.click(screen.getByRole('button', { name: /show all orders/i }));
+    expect(screen.getByText(/showing all 2 total orders/i)).toBeInTheDocument();
   });
 });
