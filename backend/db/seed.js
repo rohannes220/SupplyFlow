@@ -4,7 +4,9 @@ import { DEMO_ORDERS, seedDemoOrders } from './seeds/demoOrders.js';
 
 try {
   const inserted = await seedDemoOrders(pool);
-  console.log(`Seeded demo orders: ${inserted} new, ${DEMO_ORDERS.length - inserted} already present.`);
+  console.log(
+    `Seeded demo orders: ${inserted} new, ${DEMO_ORDERS.length - inserted} already present.`,
+  );
 } catch (err) {
   console.error('Error during database seed:', err);
   process.exitCode = 1;

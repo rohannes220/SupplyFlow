@@ -63,6 +63,22 @@ export function createOrderService(orderModel) {
       return updated;
     },
 
+    async updateOrderStatus(rawId, status) {
+      const existing = await findExisting(rawId);
+      const VALID_STATUSES = ['Draft', 'Pending', 'Approved', 'Shipped', 'Delivered', 'Cancelled'];
+      if (!VALID_STATUSES.includes(status)) {
+        throw new ValidationError([
+          {
+            field: 'status',
+            message: `Status must be one of: ${VALID_STATUSES.join(', ')}`,
+          },
+        ]);
+      }
+      const updated = await orderModel.updateStatus(existing.orderId, status);
+      if (!updated) throw new NotFoundError(`Order ${existing.orderId} not found`);
+      return updated;
+    },
+
     async deleteOrder(rawId) {
       const existing = await findExisting(rawId);
       assertEditable(existing, 'deleted');

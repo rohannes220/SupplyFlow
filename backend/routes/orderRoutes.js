@@ -106,6 +106,7 @@ export function createOrderRoutes(controller) {
    */
   router.get('/:id', wrap(controller.get));
   router.put('/:id', wrap(controller.update));
+  router.patch('/:id/status', wrap(controller.updateStatus));
   router.delete('/:id', wrap(controller.remove));
 
   return router;

@@ -15,7 +15,9 @@ if (process.env.DATABASE_URL) {
     console.log('Connected to PostgreSQL database');
     orderModel = createOrderModel(pool);
   } catch (err) {
-    console.warn(`PostgreSQL unavailable (${err.message}). Using in-memory store with demo orders.`);
+    console.warn(
+      `PostgreSQL unavailable (${err.message}). Using in-memory store with demo orders.`,
+    );
     orderModel = createInMemoryOrderModel(DEMO_ORDERS);
   }
 } else {

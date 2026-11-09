@@ -17,6 +17,10 @@ export function createOrderController(orderService) {
       res.json(await orderService.updateOrder(req.params.id, req.body));
     },
 
+    async updateStatus(req, res) {
+      res.json(await orderService.updateOrderStatus(req.params.id, req.body?.status));
+    },
+
     async remove(req, res) {
       await orderService.deleteOrder(req.params.id);
       res.status(204).end();
