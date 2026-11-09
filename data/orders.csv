@@ -1,141 +1,141 @@
-Order ID,Order Amount,Vendor ID,Customer Type,Customer First Name,Customer Last Name,Customer Business Name,Customer City,Customer State,Customer Number
-5001,17284.30,1,Business,,,Milltown Industrial Supply,San Francisco,CA,619-555-6442
-5002,15709.56,38,Consumer,Emma,Taylor,,Columbus,OH,614-555-5804
-5003,13207.81,75,Business,,,Wayland Commercial Roofing,New York,NY,212-555-7826
-5004,4193.75,112,Consumer,Ethan,Williams,,Portland,OR,410-555-4194
-5005,6035.23,9,Business,,,Westlake Flooring,Tampa,FL,305-555-2822
-5006,12884.36,46,Consumer,Charlotte,Lewis,,Miami,FL,305-555-9435
-5007,14544.93,83,Business,,,Clinton Technology Services,Detroit,MI,901-555-3071
-5008,423.93,120,Consumer,Olivia,Thomas,,Denver,CO,303-555-4165
-5009,3104.65,17,Business,,,Bakersfield Medical Supplies,San Diego,CA,213-555-3961
-5010,16130.36,54,Consumer,Mason,Davis,,Chicago,IL,773-555-8584
-5011,2236.33,91,Business,,,Whitehall Transportation,Nashville,TN,901-555-8173
-5012,11839.00,128,Consumer,Harper,Hall,,Austin,TX,214-555-7598
-5013,6018.47,25,Business,,,Vernon Wholesale Foods,Charlotte,NC,704-555-5506
-5014,11663.35,62,Consumer,Grace,White,,Boston,MA,781-555-0688
-5015,15538.15,99,Business,,,Marshall Property Management,Phoenix,AZ,901-555-0756
-5016,10519.68,136,Consumer,Ava,Wilson,,Baltimore,MD,901-555-8784
-5017,7116.67,33,Business,,,Murfreesboro Machine Shop,Atlanta,GA,404-555-4540
-5018,5886.54,70,Consumer,Lucas,Allen,,Minneapolis,MN,503-555-4496
-5019,11233.00,107,Business,,,Sterling Business Solutions,Seattle,WA,206-555-5479
-5020,11356.10,4,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-1088
-5021,7446.23,41,Business,,,Wellington Courier Services,San Francisco,CA,619-555-4952
-5022,8460.98,78,Consumer,Emma,Taylor,,Columbus,OH,216-555-5813
-5023,9711.89,115,Business,,,Stonebridge Safety Equipment,New York,NY,718-555-3025
-5024,4742.91,12,Consumer,Ethan,Williams,,Portland,OR,503-555-5995
-5025,3337.34,49,Business,,,Amherst Home Improvement,Tampa,FL,305-555-8455
-5026,10288.38,86,Consumer,Charlotte,Lewis,,Miami,FL,407-555-0188
-5027,1917.48,123,Business,,,Redmond Water Services,Detroit,MI,202-555-7268
-5028,10810.20,20,Consumer,Olivia,Thomas,,Denver,CO,303-555-9670
-5029,14457.11,57,Business,,,Ashland Pest Control,San Diego,CA,213-555-0275
-5030,14926.71,94,Consumer,Mason,Davis,,Chicago,IL,773-555-8410
-5031,4634.36,131,Business,,,Morgantown Facility Maintenance,Nashville,TN,503-555-2788
-5032,7539.44,28,Consumer,Harper,Hall,,Austin,TX,214-555-9520
-5033,16630.74,65,Business,,,Beacon Paper Products,Charlotte,NC,919-555-1317
-5034,6379.33,102,Consumer,Grace,White,,Boston,MA,508-555-2662
-5035,17849.09,139,Business,,,Hamilton Security Systems,Phoenix,AZ,301-555-6433
-5036,3699.34,36,Consumer,Ava,Wilson,,Baltimore,MD,410-555-3914
-5037,15153.27,73,Business,,,Woodlawn Appliance Repair,Atlanta,GA,678-555-9899
-5038,857.26,110,Consumer,Lucas,Allen,,Minneapolis,MN,801-555-6065
-5039,12057.95,7,Business,,,Winthrop Construction,Seattle,WA,206-555-9760
-5040,14524.15,44,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-5597
-5041,9913.18,81,Business,,,Redstone Logistics,San Francisco,CA,213-555-8640
-5042,11434.65,118,Consumer,Emma,Taylor,,Columbus,OH,614-555-6226
-5043,16458.81,15,Business,,,Hayward Retail Supply,New York,NY,212-555-9265
-5044,17934.24,52,Consumer,Ethan,Williams,,Portland,OR,901-555-5337
-5045,3330.41,89,Business,,,Concord Commercial Painting,Tampa,FL,305-555-1389
-5046,9467.94,126,Consumer,Charlotte,Lewis,,Miami,FL,407-555-2081
-5047,837.60,23,Business,,,Henderson Metal Fabrication,Detroit,MI,503-555-4469
-5048,6891.27,60,Consumer,Olivia,Thomas,,Denver,CO,303-555-9493
-5049,2718.52,97,Business,,,Carmel Restaurant Supply,San Diego,CA,213-555-9740
-5050,2989.52,134,Consumer,Mason,Davis,,Chicago,IL,773-555-1344
-5051,11293.95,31,Business,,,Avon Agricultural Supply,Nashville,TN,503-555-5887
-5052,1635.17,68,Consumer,Harper,Hall,,Austin,TX,713-555-0706
-5053,2877.88,105,Business,,,Worcester IT Services,Charlotte,NC,704-555-5233
-5054,300.09,2,Consumer,Grace,White,,Boston,MA,508-555-1439
-5055,14667.00,39,Business,,,Cohoes Janitorial Services,Phoenix,AZ,202-555-2535
-5056,4481.09,76,Consumer,Ava,Wilson,,Baltimore,MD,801-555-5465
-5057,1417.14,113,Business,,,Joliet Plumbing Services,Atlanta,GA,404-555-8406
-5058,11225.76,10,Consumer,Lucas,Allen,,Minneapolis,MN,602-555-8976
-5059,12951.59,47,Business,,,Fairview Auto Parts,Seattle,WA,206-555-8103
-5060,11395.92,84,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-1632
-5061,9910.08,121,Business,,,Liberty Office Supplies,San Francisco,CA,213-555-1747
-5062,9680.70,18,Consumer,Emma,Taylor,,Columbus,OH,614-555-7858
-5063,12987.48,55,Business,,,Plymouth Landscaping,New York,NY,646-555-9728
-5064,5670.95,92,Consumer,Ethan,Williams,,Portland,OR,901-555-9247
-5065,15186.93,129,Business,,,Seaside Electrical Supply,Tampa,FL,305-555-5633
-5066,12527.87,26,Consumer,Charlotte,Lewis,,Miami,FL,407-555-5318
-5067,15465.09,63,Business,,,Yorktown Hardware,Detroit,MI,202-555-8387
-5068,16043.87,100,Consumer,Olivia,Thomas,,Denver,CO,303-555-9385
-5069,15133.57,137,Business,,,Duluth Printing,San Diego,CA,619-555-1386
-5070,9405.08,34,Consumer,Mason,Davis,,Chicago,IL,773-555-8908
-5071,9461.86,71,Business,,,Blackstone Cleaning Services,Nashville,TN,503-555-1214
-5072,13239.66,108,Consumer,Harper,Hall,,Austin,TX,713-555-7001
-5073,10475.89,5,Business,,,Franklin Furniture,Charlotte,NC,704-555-8262
-5074,624.06,42,Consumer,Grace,White,,Boston,MA,617-555-1734
-5075,16514.95,79,Business,,,Bellwood Building Materials,Phoenix,AZ,602-555-5848
-5076,3683.69,116,Consumer,Ava,Wilson,,Baltimore,MD,801-555-8859
-5077,8783.98,13,Business,,,Beaverton Food Distribution,Atlanta,GA,678-555-9676
-5078,8211.31,50,Consumer,Lucas,Allen,,Minneapolis,MN,801-555-0751
-5079,1792.56,87,Business,,,Laurel Equipment Rental,Seattle,WA,425-555-8589
-5080,10461.39,124,Consumer,Evelyn,Martin,,Philadelphia,PA,412-555-0696
-5081,10676.97,21,Business,,,Webster HVAC Services,San Francisco,CA,619-555-8910
-5082,14659.17,58,Consumer,Emma,Taylor,,Columbus,OH,216-555-0164
-5083,11067.48,95,Business,,,Alpine Packaging,New York,NY,212-555-2662
-5084,5604.99,132,Consumer,Ethan,Williams,,Portland,OR,901-555-8885
-5085,10222.90,29,Business,,,Boulder Industrial Supply,Tampa,FL,407-555-0852
-5086,17270.31,66,Consumer,Charlotte,Lewis,,Miami,FL,407-555-3975
-5087,11505.24,103,Business,,,Binghamton Commercial Roofing,Detroit,MI,410-555-2071
-5088,15207.95,140,Consumer,Olivia,Thomas,,Denver,CO,303-555-5021
-5089,327.28,37,Business,,,Charlotte Flooring,San Diego,CA,415-555-5673
-5090,12451.43,74,Consumer,Mason,Davis,,Chicago,IL,312-555-2671
-5091,3900.59,111,Business,,,Lincoln Technology Services,Nashville,TN,602-555-4853
-5092,3035.12,8,Consumer,Harper,Hall,,Austin,TX,713-555-9541
-5093,6045.21,45,Business,,,Harrisburg Medical Supplies,Charlotte,NC,919-555-0121
-5094,3304.04,82,Consumer,Grace,White,,Boston,MA,617-555-7406
-5095,1657.06,119,Business,,,Summit Transportation,Phoenix,AZ,202-555-9352
-5096,3897.48,16,Consumer,Ava,Wilson,,Baltimore,MD,702-555-2686
-5097,4243.59,53,Business,,,Willowbrook Wholesale Foods,Atlanta,GA,678-555-8854
-5098,4583.70,90,Consumer,Lucas,Allen,,Minneapolis,MN,801-555-1710
-5099,14404.81,127,Business,,,Oakdale Property Management,Seattle,WA,206-555-9249
-5100,1612.04,24,Consumer,Evelyn,Martin,,Philadelphia,PA,412-555-8680
-5101,3703.02,61,Business,,,Hampton Machine Shop,San Francisco,CA,213-555-6748
-5102,1101.73,98,Consumer,Emma,Taylor,,Columbus,OH,614-555-5363
-5103,9173.96,135,Business,,,Palmer Business Solutions,New York,NY,212-555-1461
-5104,4220.31,32,Consumer,Ethan,Williams,,Portland,OR,410-555-9377
-5105,9612.82,69,Business,,,Orchard Courier Services,Tampa,FL,305-555-7999
-5106,4374.79,106,Consumer,Charlotte,Lewis,,Miami,FL,407-555-5445
-5107,3637.89,3,Business,,,Meridian Safety Equipment,Detroit,MI,702-555-9389
-5108,8847.15,40,Consumer,Olivia,Thomas,,Denver,CO,720-555-4848
-5109,1405.58,77,Business,,,Caledonia Home Improvement,San Diego,CA,619-555-1392
-5110,15937.39,114,Consumer,Mason,Davis,,Chicago,IL,312-555-8398
-5111,10180.94,11,Business,,,Edison Water Services,Nashville,TN,702-555-2216
-5112,7191.00,48,Consumer,Harper,Hall,,Austin,TX,713-555-5238
-5113,9953.05,85,Business,,,Louisville Pest Control,Charlotte,NC,919-555-4576
-5114,17058.42,122,Consumer,Grace,White,,Boston,MA,508-555-1093
-5115,8961.42,19,Business,,,Waltham Facility Maintenance,Phoenix,AZ,602-555-1357
-5116,7170.68,56,Consumer,Ava,Wilson,,Baltimore,MD,602-555-7463
-5117,4000.96,93,Business,,,Saratoga Paper Products,Atlanta,GA,678-555-1466
-5118,6924.49,130,Consumer,Lucas,Allen,,Minneapolis,MN,202-555-0888
-5119,13956.25,27,Business,,,Northwood Security Systems,Seattle,WA,206-555-1860
-5120,11082.61,64,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-9441
-5121,5053.63,101,Business,,,Whitman Appliance Repair,San Francisco,CA,415-555-9948
-5122,16186.05,138,Consumer,Emma,Taylor,,Columbus,OH,614-555-8537
-5123,2508.59,35,Business,,,Rosewood Construction,New York,NY,212-555-2637
-5124,6485.38,72,Consumer,Ethan,Williams,,Portland,OR,901-555-9673
-5125,13998.13,109,Business,,,Durham Logistics,Tampa,FL,407-555-0689
-5126,16483.38,6,Consumer,Charlotte,Lewis,,Miami,FL,305-555-3481
-5127,8333.02,43,Business,,,Prescott Retail Supply,Detroit,MI,901-555-4679
-5128,323.80,80,Consumer,Olivia,Thomas,,Denver,CO,720-555-9076
-5129,10149.76,117,Business,,,Brookside Commercial Painting,San Diego,CA,415-555-6031
-5130,7758.82,14,Consumer,Mason,Davis,,Chicago,IL,773-555-9467
-5131,651.13,51,Business,,,Harrison Metal Fabrication,Nashville,TN,602-555-0739
-5132,6359.76,88,Consumer,Harper,Hall,,Austin,TX,512-555-7551
-5133,15892.08,125,Business,,,Tiverton Restaurant Supply,Charlotte,NC,919-555-5992
-5134,793.93,22,Consumer,Grace,White,,Boston,MA,617-555-5610
-5135,3306.73,59,Business,,,Fairfield Agricultural Supply,Phoenix,AZ,410-555-3000
-5136,3112.08,96,Consumer,Ava,Wilson,,Baltimore,MD,410-555-6132
-5137,14384.94,133,Business,,,Glenwood IT Services,Atlanta,GA,404-555-4471
-5138,5621.43,30,Consumer,Lucas,Allen,,Minneapolis,MN,901-555-3629
-5139,12361.64,67,Business,,,Glendale Janitorial Services,Seattle,WA,425-555-8861
-5140,12193.43,104,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-9168
+Order ID,Order Amount,Vendor ID,Customer Type,Customer First Name,Customer Last Name,Customer Business Name,Customer City,Customer State,Customer Number,Status
+5001,17284.30,1,Business,,,Milltown Industrial Supply,San Francisco,CA,619-555-6442,Shipped
+5002,15709.56,38,Consumer,Emma,Taylor,,Columbus,OH,614-555-5804,Shipped
+5003,13207.81,75,Business,,,Wayland Commercial Roofing,New York,NY,212-555-7826,Delivered
+5004,4193.75,112,Consumer,Ethan,Williams,,Portland,OR,410-555-4194,Delivered
+5005,6035.23,9,Business,,,Westlake Flooring,Tampa,FL,305-555-2822,Pending
+5006,12884.36,46,Consumer,Charlotte,Lewis,,Miami,FL,305-555-9435,Shipped
+5007,14544.93,83,Business,,,Clinton Technology Services,Detroit,MI,901-555-3071,Shipped
+5008,423.93,120,Consumer,Olivia,Thomas,,Denver,CO,303-555-4165,Delivered
+5009,3104.65,17,Business,,,Bakersfield Medical Supplies,San Diego,CA,213-555-3961,Delivered
+5010,16130.36,54,Consumer,Mason,Davis,,Chicago,IL,773-555-8584,Pending
+5011,2236.33,91,Business,,,Whitehall Transportation,Nashville,TN,901-555-8173,Shipped
+5012,11839.00,128,Consumer,Harper,Hall,,Austin,TX,214-555-7598,Shipped
+5013,6018.47,25,Business,,,Vernon Wholesale Foods,Charlotte,NC,704-555-5506,Delivered
+5014,11663.35,62,Consumer,Grace,White,,Boston,MA,781-555-0688,Delivered
+5015,15538.15,99,Business,,,Marshall Property Management,Phoenix,AZ,901-555-0756,Pending
+5016,10519.68,136,Consumer,Ava,Wilson,,Baltimore,MD,901-555-8784,Shipped
+5017,7116.67,33,Business,,,Murfreesboro Machine Shop,Atlanta,GA,404-555-4540,Shipped
+5018,5886.54,70,Consumer,Lucas,Allen,,Minneapolis,MN,503-555-4496,Delivered
+5019,11233.00,107,Business,,,Sterling Business Solutions,Seattle,WA,206-555-5479,Delivered
+5020,11356.10,4,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-1088,Pending
+5021,7446.23,41,Business,,,Wellington Courier Services,San Francisco,CA,619-555-4952,Shipped
+5022,8460.98,78,Consumer,Emma,Taylor,,Columbus,OH,216-555-5813,Shipped
+5023,9711.89,115,Business,,,Stonebridge Safety Equipment,New York,NY,718-555-3025,Delivered
+5024,4742.91,12,Consumer,Ethan,Williams,,Portland,OR,503-555-5995,Delivered
+5025,3337.34,49,Business,,,Amherst Home Improvement,Tampa,FL,305-555-8455,Pending
+5026,10288.38,86,Consumer,Charlotte,Lewis,,Miami,FL,407-555-0188,Shipped
+5027,1917.48,123,Business,,,Redmond Water Services,Detroit,MI,202-555-7268,Shipped
+5028,10810.20,20,Consumer,Olivia,Thomas,,Denver,CO,303-555-9670,Delivered
+5029,14457.11,57,Business,,,Ashland Pest Control,San Diego,CA,213-555-0275,Delivered
+5030,14926.71,94,Consumer,Mason,Davis,,Chicago,IL,773-555-8410,Pending
+5031,4634.36,131,Business,,,Morgantown Facility Maintenance,Nashville,TN,503-555-2788,Shipped
+5032,7539.44,28,Consumer,Harper,Hall,,Austin,TX,214-555-9520,Shipped
+5033,16630.74,65,Business,,,Beacon Paper Products,Charlotte,NC,919-555-1317,Delivered
+5034,6379.33,102,Consumer,Grace,White,,Boston,MA,508-555-2662,Delivered
+5035,17849.09,139,Business,,,Hamilton Security Systems,Phoenix,AZ,301-555-6433,Pending
+5036,3699.34,36,Consumer,Ava,Wilson,,Baltimore,MD,410-555-3914,Shipped
+5037,15153.27,73,Business,,,Woodlawn Appliance Repair,Atlanta,GA,678-555-9899,Shipped
+5038,857.26,110,Consumer,Lucas,Allen,,Minneapolis,MN,801-555-6065,Delivered
+5039,12057.95,7,Business,,,Winthrop Construction,Seattle,WA,206-555-9760,Delivered
+5040,14524.15,44,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-5597,Pending
+5041,9913.18,81,Business,,,Redstone Logistics,San Francisco,CA,213-555-8640,Shipped
+5042,11434.65,118,Consumer,Emma,Taylor,,Columbus,OH,614-555-6226,Shipped
+5043,16458.81,15,Business,,,Hayward Retail Supply,New York,NY,212-555-9265,Delivered
+5044,17934.24,52,Consumer,Ethan,Williams,,Portland,OR,901-555-5337,Delivered
+5045,3330.41,89,Business,,,Concord Commercial Painting,Tampa,FL,305-555-1389,Pending
+5046,9467.94,126,Consumer,Charlotte,Lewis,,Miami,FL,407-555-2081,Shipped
+5047,837.60,23,Business,,,Henderson Metal Fabrication,Detroit,MI,503-555-4469,Shipped
+5048,6891.27,60,Consumer,Olivia,Thomas,,Denver,CO,303-555-9493,Delivered
+5049,2718.52,97,Business,,,Carmel Restaurant Supply,San Diego,CA,213-555-9740,Delivered
+5050,2989.52,134,Consumer,Mason,Davis,,Chicago,IL,773-555-1344,Pending
+5051,11293.95,31,Business,,,Avon Agricultural Supply,Nashville,TN,503-555-5887,Shipped
+5052,1635.17,68,Consumer,Harper,Hall,,Austin,TX,713-555-0706,Shipped
+5053,2877.88,105,Business,,,Worcester IT Services,Charlotte,NC,704-555-5233,Delivered
+5054,300.09,2,Consumer,Grace,White,,Boston,MA,508-555-1439,Delivered
+5055,14667.00,39,Business,,,Cohoes Janitorial Services,Phoenix,AZ,202-555-2535,Pending
+5056,4481.09,76,Consumer,Ava,Wilson,,Baltimore,MD,801-555-5465,Shipped
+5057,1417.14,113,Business,,,Joliet Plumbing Services,Atlanta,GA,404-555-8406,Shipped
+5058,11225.76,10,Consumer,Lucas,Allen,,Minneapolis,MN,602-555-8976,Delivered
+5059,12951.59,47,Business,,,Fairview Auto Parts,Seattle,WA,206-555-8103,Delivered
+5060,11395.92,84,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-1632,Pending
+5061,9910.08,121,Business,,,Liberty Office Supplies,San Francisco,CA,213-555-1747,Shipped
+5062,9680.70,18,Consumer,Emma,Taylor,,Columbus,OH,614-555-7858,Shipped
+5063,12987.48,55,Business,,,Plymouth Landscaping,New York,NY,646-555-9728,Delivered
+5064,5670.95,92,Consumer,Ethan,Williams,,Portland,OR,901-555-9247,Delivered
+5065,15186.93,129,Business,,,Seaside Electrical Supply,Tampa,FL,305-555-5633,Pending
+5066,12527.87,26,Consumer,Charlotte,Lewis,,Miami,FL,407-555-5318,Shipped
+5067,15465.09,63,Business,,,Yorktown Hardware,Detroit,MI,202-555-8387,Shipped
+5068,16043.87,100,Consumer,Olivia,Thomas,,Denver,CO,303-555-9385,Delivered
+5069,15133.57,137,Business,,,Duluth Printing,San Diego,CA,619-555-1386,Delivered
+5070,9405.08,34,Consumer,Mason,Davis,,Chicago,IL,773-555-8908,Pending
+5071,9461.86,71,Business,,,Blackstone Cleaning Services,Nashville,TN,503-555-1214,Shipped
+5072,13239.66,108,Consumer,Harper,Hall,,Austin,TX,713-555-7001,Shipped
+5073,10475.89,5,Business,,,Franklin Furniture,Charlotte,NC,704-555-8262,Delivered
+5074,624.06,42,Consumer,Grace,White,,Boston,MA,617-555-1734,Delivered
+5075,16514.95,79,Business,,,Bellwood Building Materials,Phoenix,AZ,602-555-5848,Pending
+5076,3683.69,116,Consumer,Ava,Wilson,,Baltimore,MD,801-555-8859,Shipped
+5077,8783.98,13,Business,,,Beaverton Food Distribution,Atlanta,GA,678-555-9676,Shipped
+5078,8211.31,50,Consumer,Lucas,Allen,,Minneapolis,MN,801-555-0751,Delivered
+5079,1792.56,87,Business,,,Laurel Equipment Rental,Seattle,WA,425-555-8589,Delivered
+5080,10461.39,124,Consumer,Evelyn,Martin,,Philadelphia,PA,412-555-0696,Pending
+5081,10676.97,21,Business,,,Webster HVAC Services,San Francisco,CA,619-555-8910,Shipped
+5082,14659.17,58,Consumer,Emma,Taylor,,Columbus,OH,216-555-0164,Shipped
+5083,11067.48,95,Business,,,Alpine Packaging,New York,NY,212-555-2662,Delivered
+5084,5604.99,132,Consumer,Ethan,Williams,,Portland,OR,901-555-8885,Delivered
+5085,10222.90,29,Business,,,Boulder Industrial Supply,Tampa,FL,407-555-0852,Pending
+5086,17270.31,66,Consumer,Charlotte,Lewis,,Miami,FL,407-555-3975,Shipped
+5087,11505.24,103,Business,,,Binghamton Commercial Roofing,Detroit,MI,410-555-2071,Shipped
+5088,15207.95,140,Consumer,Olivia,Thomas,,Denver,CO,303-555-5021,Delivered
+5089,327.28,37,Business,,,Charlotte Flooring,San Diego,CA,415-555-5673,Delivered
+5090,12451.43,74,Consumer,Mason,Davis,,Chicago,IL,312-555-2671,Pending
+5091,3900.59,111,Business,,,Lincoln Technology Services,Nashville,TN,602-555-4853,Shipped
+5092,3035.12,8,Consumer,Harper,Hall,,Austin,TX,713-555-9541,Shipped
+5093,6045.21,45,Business,,,Harrisburg Medical Supplies,Charlotte,NC,919-555-0121,Delivered
+5094,3304.04,82,Consumer,Grace,White,,Boston,MA,617-555-7406,Delivered
+5095,1657.06,119,Business,,,Summit Transportation,Phoenix,AZ,202-555-9352,Pending
+5096,3897.48,16,Consumer,Ava,Wilson,,Baltimore,MD,702-555-2686,Shipped
+5097,4243.59,53,Business,,,Willowbrook Wholesale Foods,Atlanta,GA,678-555-8854,Shipped
+5098,4583.70,90,Consumer,Lucas,Allen,,Minneapolis,MN,801-555-1710,Delivered
+5099,14404.81,127,Business,,,Oakdale Property Management,Seattle,WA,206-555-9249,Delivered
+5100,1612.04,24,Consumer,Evelyn,Martin,,Philadelphia,PA,412-555-8680,Pending
+5101,3703.02,61,Business,,,Hampton Machine Shop,San Francisco,CA,213-555-6748,Shipped
+5102,1101.73,98,Consumer,Emma,Taylor,,Columbus,OH,614-555-5363,Shipped
+5103,9173.96,135,Business,,,Palmer Business Solutions,New York,NY,212-555-1461,Delivered
+5104,4220.31,32,Consumer,Ethan,Williams,,Portland,OR,410-555-9377,Delivered
+5105,9612.82,69,Business,,,Orchard Courier Services,Tampa,FL,305-555-7999,Pending
+5106,4374.79,106,Consumer,Charlotte,Lewis,,Miami,FL,407-555-5445,Shipped
+5107,3637.89,3,Business,,,Meridian Safety Equipment,Detroit,MI,702-555-9389,Shipped
+5108,8847.15,40,Consumer,Olivia,Thomas,,Denver,CO,720-555-4848,Delivered
+5109,1405.58,77,Business,,,Caledonia Home Improvement,San Diego,CA,619-555-1392,Delivered
+5110,15937.39,114,Consumer,Mason,Davis,,Chicago,IL,312-555-8398,Pending
+5111,10180.94,11,Business,,,Edison Water Services,Nashville,TN,702-555-2216,Shipped
+5112,7191.00,48,Consumer,Harper,Hall,,Austin,TX,713-555-5238,Shipped
+5113,9953.05,85,Business,,,Louisville Pest Control,Charlotte,NC,919-555-4576,Delivered
+5114,17058.42,122,Consumer,Grace,White,,Boston,MA,508-555-1093,Delivered
+5115,8961.42,19,Business,,,Waltham Facility Maintenance,Phoenix,AZ,602-555-1357,Pending
+5116,7170.68,56,Consumer,Ava,Wilson,,Baltimore,MD,602-555-7463,Shipped
+5117,4000.96,93,Business,,,Saratoga Paper Products,Atlanta,GA,678-555-1466,Shipped
+5118,6924.49,130,Consumer,Lucas,Allen,,Minneapolis,MN,202-555-0888,Delivered
+5119,13956.25,27,Business,,,Northwood Security Systems,Seattle,WA,206-555-1860,Delivered
+5120,11082.61,64,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-9441,Pending
+5121,5053.63,101,Business,,,Whitman Appliance Repair,San Francisco,CA,415-555-9948,Shipped
+5122,16186.05,138,Consumer,Emma,Taylor,,Columbus,OH,614-555-8537,Shipped
+5123,2508.59,35,Business,,,Rosewood Construction,New York,NY,212-555-2637,Delivered
+5124,6485.38,72,Consumer,Ethan,Williams,,Portland,OR,901-555-9673,Delivered
+5125,13998.13,109,Business,,,Durham Logistics,Tampa,FL,407-555-0689,Pending
+5126,16483.38,6,Consumer,Charlotte,Lewis,,Miami,FL,305-555-3481,Shipped
+5127,8333.02,43,Business,,,Prescott Retail Supply,Detroit,MI,901-555-4679,Shipped
+5128,323.80,80,Consumer,Olivia,Thomas,,Denver,CO,720-555-9076,Delivered
+5129,10149.76,117,Business,,,Brookside Commercial Painting,San Diego,CA,415-555-6031,Delivered
+5130,7758.82,14,Consumer,Mason,Davis,,Chicago,IL,773-555-9467,Pending
+5131,651.13,51,Business,,,Harrison Metal Fabrication,Nashville,TN,602-555-0739,Shipped
+5132,6359.76,88,Consumer,Harper,Hall,,Austin,TX,512-555-7551,Shipped
+5133,15892.08,125,Business,,,Tiverton Restaurant Supply,Charlotte,NC,919-555-5992,Delivered
+5134,793.93,22,Consumer,Grace,White,,Boston,MA,617-555-5610,Delivered
+5135,3306.73,59,Business,,,Fairfield Agricultural Supply,Phoenix,AZ,410-555-3000,Pending
+5136,3112.08,96,Consumer,Ava,Wilson,,Baltimore,MD,410-555-6132,Shipped
+5137,14384.94,133,Business,,,Glenwood IT Services,Atlanta,GA,404-555-4471,Shipped
+5138,5621.43,30,Consumer,Lucas,Allen,,Minneapolis,MN,901-555-3629,Delivered
+5139,12361.64,67,Business,,,Glendale Janitorial Services,Seattle,WA,425-555-8861,Delivered
+5140,12193.43,104,Consumer,Evelyn,Martin,,Philadelphia,PA,215-555-9168,Pending
