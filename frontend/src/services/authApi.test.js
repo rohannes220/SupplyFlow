@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { login, getMe } from './authApi.js';
+import { login, register, getMe } from './authApi.js';
 import { ApiError } from './orderApi.js';
 
 function mockFetch(status, body) {
@@ -41,6 +41,32 @@ describe('authApi', () => {
       const err = await login('a@b.com', 'x').catch((e) => e);
       expect(err).toBeInstanceOf(ApiError);
       expect(err.message).toMatch(/could not reach/i);
+    });
+  });
+
+  describe('register', () => {
+    it('POSTs name, email and password to /api/auth/register and returns token and user', async () => {
+      mockFetch(201, { token: 'jwt-456', user });
+
+      expect(await register('Sam', 'sam@example.com', 'Str0ng#Pass')).toEqual({
+        token: 'jwt-456',
+        user,
+      });
+      const [url, init] = fetch.mock.calls[0];
+      expect(url).toBe('/api/auth/register');
+      expect(init.method).toBe('POST');
+      expect(JSON.parse(init.body)).toEqual({
+        name: 'Sam',
+        email: 'sam@example.com',
+        password: 'Str0ng#Pass',
+      });
+    });
+
+    it('throws ApiError with status 409 when the email is taken', async () => {
+      mockFetch(409, { error: { message: 'An account with this email already exists' } });
+      const err = await register('Sam', 'sam@example.com', 'Str0ng#Pass').catch((e) => e);
+      expect(err).toBeInstanceOf(ApiError);
+      expect(err.status).toBe(409);
     });
   });
 
