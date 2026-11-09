@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "pnpm -r --parallel dev",
     "dev:api": "pnpm --filter supplyflow-backend dev",
     "dev:web": "pnpm --filter supplyflow-frontend dev",
     "lint": "eslint .",

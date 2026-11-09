@@ -1,0 +1,1429 @@
+// 140 sample orders from data/orders.csv with statuses Pending, Shipped, Delivered.
+export const DEMO_ORDERS = Object.freeze([
+  {
+    "orderId": 5001,
+    "vendorId": 1,
+    "orderAmount": 17284.3,
+    "customerName": "Milltown Industrial Supply",
+    "customerCity": "San Francisco",
+    "customerState": "CA",
+    "customerPhone": "6195556442",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5002,
+    "vendorId": 38,
+    "orderAmount": 15709.56,
+    "customerName": "Emma Taylor",
+    "customerCity": "Columbus",
+    "customerState": "OH",
+    "customerPhone": "6145555804",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5003,
+    "vendorId": 75,
+    "orderAmount": 13207.81,
+    "customerName": "Wayland Commercial Roofing",
+    "customerCity": "New York",
+    "customerState": "NY",
+    "customerPhone": "2125557826",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5004,
+    "vendorId": 112,
+    "orderAmount": 4193.75,
+    "customerName": "Ethan Williams",
+    "customerCity": "Portland",
+    "customerState": "OR",
+    "customerPhone": "4105554194",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5005,
+    "vendorId": 9,
+    "orderAmount": 6035.23,
+    "customerName": "Westlake Flooring",
+    "customerCity": "Tampa",
+    "customerState": "FL",
+    "customerPhone": "3055552822",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5006,
+    "vendorId": 46,
+    "orderAmount": 12884.36,
+    "customerName": "Charlotte Lewis",
+    "customerCity": "Miami",
+    "customerState": "FL",
+    "customerPhone": "3055559435",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5007,
+    "vendorId": 83,
+    "orderAmount": 14544.93,
+    "customerName": "Clinton Technology Services",
+    "customerCity": "Detroit",
+    "customerState": "MI",
+    "customerPhone": "9015553071",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5008,
+    "vendorId": 120,
+    "orderAmount": 423.93,
+    "customerName": "Olivia Thomas",
+    "customerCity": "Denver",
+    "customerState": "CO",
+    "customerPhone": "3035554165",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5009,
+    "vendorId": 17,
+    "orderAmount": 3104.65,
+    "customerName": "Bakersfield Medical Supplies",
+    "customerCity": "San Diego",
+    "customerState": "CA",
+    "customerPhone": "2135553961",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5010,
+    "vendorId": 54,
+    "orderAmount": 16130.36,
+    "customerName": "Mason Davis",
+    "customerCity": "Chicago",
+    "customerState": "IL",
+    "customerPhone": "7735558584",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5011,
+    "vendorId": 91,
+    "orderAmount": 2236.33,
+    "customerName": "Whitehall Transportation",
+    "customerCity": "Nashville",
+    "customerState": "TN",
+    "customerPhone": "9015558173",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5012,
+    "vendorId": 128,
+    "orderAmount": 11839,
+    "customerName": "Harper Hall",
+    "customerCity": "Austin",
+    "customerState": "TX",
+    "customerPhone": "2145557598",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5013,
+    "vendorId": 25,
+    "orderAmount": 6018.47,
+    "customerName": "Vernon Wholesale Foods",
+    "customerCity": "Charlotte",
+    "customerState": "NC",
+    "customerPhone": "7045555506",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5014,
+    "vendorId": 62,
+    "orderAmount": 11663.35,
+    "customerName": "Grace White",
+    "customerCity": "Boston",
+    "customerState": "MA",
+    "customerPhone": "7815550688",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5015,
+    "vendorId": 99,
+    "orderAmount": 15538.15,
+    "customerName": "Marshall Property Management",
+    "customerCity": "Phoenix",
+    "customerState": "AZ",
+    "customerPhone": "9015550756",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5016,
+    "vendorId": 136,
+    "orderAmount": 10519.68,
+    "customerName": "Ava Wilson",
+    "customerCity": "Baltimore",
+    "customerState": "MD",
+    "customerPhone": "9015558784",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5017,
+    "vendorId": 33,
+    "orderAmount": 7116.67,
+    "customerName": "Murfreesboro Machine Shop",
+    "customerCity": "Atlanta",
+    "customerState": "GA",
+    "customerPhone": "4045554540",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5018,
+    "vendorId": 70,
+    "orderAmount": 5886.54,
+    "customerName": "Lucas Allen",
+    "customerCity": "Minneapolis",
+    "customerState": "MN",
+    "customerPhone": "5035554496",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5019,
+    "vendorId": 107,
+    "orderAmount": 11233,
+    "customerName": "Sterling Business Solutions",
+    "customerCity": "Seattle",
+    "customerState": "WA",
+    "customerPhone": "2065555479",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5020,
+    "vendorId": 4,
+    "orderAmount": 11356.1,
+    "customerName": "Evelyn Martin",
+    "customerCity": "Philadelphia",
+    "customerState": "PA",
+    "customerPhone": "2155551088",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5021,
+    "vendorId": 41,
+    "orderAmount": 7446.23,
+    "customerName": "Wellington Courier Services",
+    "customerCity": "San Francisco",
+    "customerState": "CA",
+    "customerPhone": "6195554952",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5022,
+    "vendorId": 78,
+    "orderAmount": 8460.98,
+    "customerName": "Emma Taylor",
+    "customerCity": "Columbus",
+    "customerState": "OH",
+    "customerPhone": "2165555813",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5023,
+    "vendorId": 115,
+    "orderAmount": 9711.89,
+    "customerName": "Stonebridge Safety Equipment",
+    "customerCity": "New York",
+    "customerState": "NY",
+    "customerPhone": "7185553025",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5024,
+    "vendorId": 12,
+    "orderAmount": 4742.91,
+    "customerName": "Ethan Williams",
+    "customerCity": "Portland",
+    "customerState": "OR",
+    "customerPhone": "5035555995",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5025,
+    "vendorId": 49,
+    "orderAmount": 3337.34,
+    "customerName": "Amherst Home Improvement",
+    "customerCity": "Tampa",
+    "customerState": "FL",
+    "customerPhone": "3055558455",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5026,
+    "vendorId": 86,
+    "orderAmount": 10288.38,
+    "customerName": "Charlotte Lewis",
+    "customerCity": "Miami",
+    "customerState": "FL",
+    "customerPhone": "4075550188",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5027,
+    "vendorId": 123,
+    "orderAmount": 1917.48,
+    "customerName": "Redmond Water Services",
+    "customerCity": "Detroit",
+    "customerState": "MI",
+    "customerPhone": "2025557268",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5028,
+    "vendorId": 20,
+    "orderAmount": 10810.2,
+    "customerName": "Olivia Thomas",
+    "customerCity": "Denver",
+    "customerState": "CO",
+    "customerPhone": "3035559670",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5029,
+    "vendorId": 57,
+    "orderAmount": 14457.11,
+    "customerName": "Ashland Pest Control",
+    "customerCity": "San Diego",
+    "customerState": "CA",
+    "customerPhone": "2135550275",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5030,
+    "vendorId": 94,
+    "orderAmount": 14926.71,
+    "customerName": "Mason Davis",
+    "customerCity": "Chicago",
+    "customerState": "IL",
+    "customerPhone": "7735558410",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5031,
+    "vendorId": 131,
+    "orderAmount": 4634.36,
+    "customerName": "Morgantown Facility Maintenance",
+    "customerCity": "Nashville",
+    "customerState": "TN",
+    "customerPhone": "5035552788",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5032,
+    "vendorId": 28,
+    "orderAmount": 7539.44,
+    "customerName": "Harper Hall",
+    "customerCity": "Austin",
+    "customerState": "TX",
+    "customerPhone": "2145559520",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5033,
+    "vendorId": 65,
+    "orderAmount": 16630.74,
+    "customerName": "Beacon Paper Products",
+    "customerCity": "Charlotte",
+    "customerState": "NC",
+    "customerPhone": "9195551317",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5034,
+    "vendorId": 102,
+    "orderAmount": 6379.33,
+    "customerName": "Grace White",
+    "customerCity": "Boston",
+    "customerState": "MA",
+    "customerPhone": "5085552662",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5035,
+    "vendorId": 139,
+    "orderAmount": 17849.09,
+    "customerName": "Hamilton Security Systems",
+    "customerCity": "Phoenix",
+    "customerState": "AZ",
+    "customerPhone": "3015556433",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5036,
+    "vendorId": 36,
+    "orderAmount": 3699.34,
+    "customerName": "Ava Wilson",
+    "customerCity": "Baltimore",
+    "customerState": "MD",
+    "customerPhone": "4105553914",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5037,
+    "vendorId": 73,
+    "orderAmount": 15153.27,
+    "customerName": "Woodlawn Appliance Repair",
+    "customerCity": "Atlanta",
+    "customerState": "GA",
+    "customerPhone": "6785559899",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5038,
+    "vendorId": 110,
+    "orderAmount": 857.26,
+    "customerName": "Lucas Allen",
+    "customerCity": "Minneapolis",
+    "customerState": "MN",
+    "customerPhone": "8015556065",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5039,
+    "vendorId": 7,
+    "orderAmount": 12057.95,
+    "customerName": "Winthrop Construction",
+    "customerCity": "Seattle",
+    "customerState": "WA",
+    "customerPhone": "2065559760",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5040,
+    "vendorId": 44,
+    "orderAmount": 14524.15,
+    "customerName": "Evelyn Martin",
+    "customerCity": "Philadelphia",
+    "customerState": "PA",
+    "customerPhone": "2155555597",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5041,
+    "vendorId": 81,
+    "orderAmount": 9913.18,
+    "customerName": "Redstone Logistics",
+    "customerCity": "San Francisco",
+    "customerState": "CA",
+    "customerPhone": "2135558640",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5042,
+    "vendorId": 118,
+    "orderAmount": 11434.65,
+    "customerName": "Emma Taylor",
+    "customerCity": "Columbus",
+    "customerState": "OH",
+    "customerPhone": "6145556226",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5043,
+    "vendorId": 15,
+    "orderAmount": 16458.81,
+    "customerName": "Hayward Retail Supply",
+    "customerCity": "New York",
+    "customerState": "NY",
+    "customerPhone": "2125559265",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5044,
+    "vendorId": 52,
+    "orderAmount": 17934.24,
+    "customerName": "Ethan Williams",
+    "customerCity": "Portland",
+    "customerState": "OR",
+    "customerPhone": "9015555337",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5045,
+    "vendorId": 89,
+    "orderAmount": 3330.41,
+    "customerName": "Concord Commercial Painting",
+    "customerCity": "Tampa",
+    "customerState": "FL",
+    "customerPhone": "3055551389",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5046,
+    "vendorId": 126,
+    "orderAmount": 9467.94,
+    "customerName": "Charlotte Lewis",
+    "customerCity": "Miami",
+    "customerState": "FL",
+    "customerPhone": "4075552081",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5047,
+    "vendorId": 23,
+    "orderAmount": 837.6,
+    "customerName": "Henderson Metal Fabrication",
+    "customerCity": "Detroit",
+    "customerState": "MI",
+    "customerPhone": "5035554469",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5048,
+    "vendorId": 60,
+    "orderAmount": 6891.27,
+    "customerName": "Olivia Thomas",
+    "customerCity": "Denver",
+    "customerState": "CO",
+    "customerPhone": "3035559493",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5049,
+    "vendorId": 97,
+    "orderAmount": 2718.52,
+    "customerName": "Carmel Restaurant Supply",
+    "customerCity": "San Diego",
+    "customerState": "CA",
+    "customerPhone": "2135559740",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5050,
+    "vendorId": 134,
+    "orderAmount": 2989.52,
+    "customerName": "Mason Davis",
+    "customerCity": "Chicago",
+    "customerState": "IL",
+    "customerPhone": "7735551344",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5051,
+    "vendorId": 31,
+    "orderAmount": 11293.95,
+    "customerName": "Avon Agricultural Supply",
+    "customerCity": "Nashville",
+    "customerState": "TN",
+    "customerPhone": "5035555887",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5052,
+    "vendorId": 68,
+    "orderAmount": 1635.17,
+    "customerName": "Harper Hall",
+    "customerCity": "Austin",
+    "customerState": "TX",
+    "customerPhone": "7135550706",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5053,
+    "vendorId": 105,
+    "orderAmount": 2877.88,
+    "customerName": "Worcester IT Services",
+    "customerCity": "Charlotte",
+    "customerState": "NC",
+    "customerPhone": "7045555233",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5054,
+    "vendorId": 2,
+    "orderAmount": 300.09,
+    "customerName": "Grace White",
+    "customerCity": "Boston",
+    "customerState": "MA",
+    "customerPhone": "5085551439",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5055,
+    "vendorId": 39,
+    "orderAmount": 14667,
+    "customerName": "Cohoes Janitorial Services",
+    "customerCity": "Phoenix",
+    "customerState": "AZ",
+    "customerPhone": "2025552535",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5056,
+    "vendorId": 76,
+    "orderAmount": 4481.09,
+    "customerName": "Ava Wilson",
+    "customerCity": "Baltimore",
+    "customerState": "MD",
+    "customerPhone": "8015555465",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5057,
+    "vendorId": 113,
+    "orderAmount": 1417.14,
+    "customerName": "Joliet Plumbing Services",
+    "customerCity": "Atlanta",
+    "customerState": "GA",
+    "customerPhone": "4045558406",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5058,
+    "vendorId": 10,
+    "orderAmount": 11225.76,
+    "customerName": "Lucas Allen",
+    "customerCity": "Minneapolis",
+    "customerState": "MN",
+    "customerPhone": "6025558976",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5059,
+    "vendorId": 47,
+    "orderAmount": 12951.59,
+    "customerName": "Fairview Auto Parts",
+    "customerCity": "Seattle",
+    "customerState": "WA",
+    "customerPhone": "2065558103",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5060,
+    "vendorId": 84,
+    "orderAmount": 11395.92,
+    "customerName": "Evelyn Martin",
+    "customerCity": "Philadelphia",
+    "customerState": "PA",
+    "customerPhone": "2155551632",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5061,
+    "vendorId": 121,
+    "orderAmount": 9910.08,
+    "customerName": "Liberty Office Supplies",
+    "customerCity": "San Francisco",
+    "customerState": "CA",
+    "customerPhone": "2135551747",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5062,
+    "vendorId": 18,
+    "orderAmount": 9680.7,
+    "customerName": "Emma Taylor",
+    "customerCity": "Columbus",
+    "customerState": "OH",
+    "customerPhone": "6145557858",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5063,
+    "vendorId": 55,
+    "orderAmount": 12987.48,
+    "customerName": "Plymouth Landscaping",
+    "customerCity": "New York",
+    "customerState": "NY",
+    "customerPhone": "6465559728",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5064,
+    "vendorId": 92,
+    "orderAmount": 5670.95,
+    "customerName": "Ethan Williams",
+    "customerCity": "Portland",
+    "customerState": "OR",
+    "customerPhone": "9015559247",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5065,
+    "vendorId": 129,
+    "orderAmount": 15186.93,
+    "customerName": "Seaside Electrical Supply",
+    "customerCity": "Tampa",
+    "customerState": "FL",
+    "customerPhone": "3055555633",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5066,
+    "vendorId": 26,
+    "orderAmount": 12527.87,
+    "customerName": "Charlotte Lewis",
+    "customerCity": "Miami",
+    "customerState": "FL",
+    "customerPhone": "4075555318",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5067,
+    "vendorId": 63,
+    "orderAmount": 15465.09,
+    "customerName": "Yorktown Hardware",
+    "customerCity": "Detroit",
+    "customerState": "MI",
+    "customerPhone": "2025558387",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5068,
+    "vendorId": 100,
+    "orderAmount": 16043.87,
+    "customerName": "Olivia Thomas",
+    "customerCity": "Denver",
+    "customerState": "CO",
+    "customerPhone": "3035559385",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5069,
+    "vendorId": 137,
+    "orderAmount": 15133.57,
+    "customerName": "Duluth Printing",
+    "customerCity": "San Diego",
+    "customerState": "CA",
+    "customerPhone": "6195551386",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5070,
+    "vendorId": 34,
+    "orderAmount": 9405.08,
+    "customerName": "Mason Davis",
+    "customerCity": "Chicago",
+    "customerState": "IL",
+    "customerPhone": "7735558908",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5071,
+    "vendorId": 71,
+    "orderAmount": 9461.86,
+    "customerName": "Blackstone Cleaning Services",
+    "customerCity": "Nashville",
+    "customerState": "TN",
+    "customerPhone": "5035551214",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5072,
+    "vendorId": 108,
+    "orderAmount": 13239.66,
+    "customerName": "Harper Hall",
+    "customerCity": "Austin",
+    "customerState": "TX",
+    "customerPhone": "7135557001",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5073,
+    "vendorId": 5,
+    "orderAmount": 10475.89,
+    "customerName": "Franklin Furniture",
+    "customerCity": "Charlotte",
+    "customerState": "NC",
+    "customerPhone": "7045558262",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5074,
+    "vendorId": 42,
+    "orderAmount": 624.06,
+    "customerName": "Grace White",
+    "customerCity": "Boston",
+    "customerState": "MA",
+    "customerPhone": "6175551734",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5075,
+    "vendorId": 79,
+    "orderAmount": 16514.95,
+    "customerName": "Bellwood Building Materials",
+    "customerCity": "Phoenix",
+    "customerState": "AZ",
+    "customerPhone": "6025555848",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5076,
+    "vendorId": 116,
+    "orderAmount": 3683.69,
+    "customerName": "Ava Wilson",
+    "customerCity": "Baltimore",
+    "customerState": "MD",
+    "customerPhone": "8015558859",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5077,
+    "vendorId": 13,
+    "orderAmount": 8783.98,
+    "customerName": "Beaverton Food Distribution",
+    "customerCity": "Atlanta",
+    "customerState": "GA",
+    "customerPhone": "6785559676",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5078,
+    "vendorId": 50,
+    "orderAmount": 8211.31,
+    "customerName": "Lucas Allen",
+    "customerCity": "Minneapolis",
+    "customerState": "MN",
+    "customerPhone": "8015550751",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5079,
+    "vendorId": 87,
+    "orderAmount": 1792.56,
+    "customerName": "Laurel Equipment Rental",
+    "customerCity": "Seattle",
+    "customerState": "WA",
+    "customerPhone": "4255558589",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5080,
+    "vendorId": 124,
+    "orderAmount": 10461.39,
+    "customerName": "Evelyn Martin",
+    "customerCity": "Philadelphia",
+    "customerState": "PA",
+    "customerPhone": "4125550696",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5081,
+    "vendorId": 21,
+    "orderAmount": 10676.97,
+    "customerName": "Webster HVAC Services",
+    "customerCity": "San Francisco",
+    "customerState": "CA",
+    "customerPhone": "6195558910",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5082,
+    "vendorId": 58,
+    "orderAmount": 14659.17,
+    "customerName": "Emma Taylor",
+    "customerCity": "Columbus",
+    "customerState": "OH",
+    "customerPhone": "2165550164",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5083,
+    "vendorId": 95,
+    "orderAmount": 11067.48,
+    "customerName": "Alpine Packaging",
+    "customerCity": "New York",
+    "customerState": "NY",
+    "customerPhone": "2125552662",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5084,
+    "vendorId": 132,
+    "orderAmount": 5604.99,
+    "customerName": "Ethan Williams",
+    "customerCity": "Portland",
+    "customerState": "OR",
+    "customerPhone": "9015558885",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5085,
+    "vendorId": 29,
+    "orderAmount": 10222.9,
+    "customerName": "Boulder Industrial Supply",
+    "customerCity": "Tampa",
+    "customerState": "FL",
+    "customerPhone": "4075550852",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5086,
+    "vendorId": 66,
+    "orderAmount": 17270.31,
+    "customerName": "Charlotte Lewis",
+    "customerCity": "Miami",
+    "customerState": "FL",
+    "customerPhone": "4075553975",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5087,
+    "vendorId": 103,
+    "orderAmount": 11505.24,
+    "customerName": "Binghamton Commercial Roofing",
+    "customerCity": "Detroit",
+    "customerState": "MI",
+    "customerPhone": "4105552071",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5088,
+    "vendorId": 140,
+    "orderAmount": 15207.95,
+    "customerName": "Olivia Thomas",
+    "customerCity": "Denver",
+    "customerState": "CO",
+    "customerPhone": "3035555021",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5089,
+    "vendorId": 37,
+    "orderAmount": 327.28,
+    "customerName": "Charlotte Flooring",
+    "customerCity": "San Diego",
+    "customerState": "CA",
+    "customerPhone": "4155555673",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5090,
+    "vendorId": 74,
+    "orderAmount": 12451.43,
+    "customerName": "Mason Davis",
+    "customerCity": "Chicago",
+    "customerState": "IL",
+    "customerPhone": "3125552671",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5091,
+    "vendorId": 111,
+    "orderAmount": 3900.59,
+    "customerName": "Lincoln Technology Services",
+    "customerCity": "Nashville",
+    "customerState": "TN",
+    "customerPhone": "6025554853",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5092,
+    "vendorId": 8,
+    "orderAmount": 3035.12,
+    "customerName": "Harper Hall",
+    "customerCity": "Austin",
+    "customerState": "TX",
+    "customerPhone": "7135559541",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5093,
+    "vendorId": 45,
+    "orderAmount": 6045.21,
+    "customerName": "Harrisburg Medical Supplies",
+    "customerCity": "Charlotte",
+    "customerState": "NC",
+    "customerPhone": "9195550121",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5094,
+    "vendorId": 82,
+    "orderAmount": 3304.04,
+    "customerName": "Grace White",
+    "customerCity": "Boston",
+    "customerState": "MA",
+    "customerPhone": "6175557406",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5095,
+    "vendorId": 119,
+    "orderAmount": 1657.06,
+    "customerName": "Summit Transportation",
+    "customerCity": "Phoenix",
+    "customerState": "AZ",
+    "customerPhone": "2025559352",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5096,
+    "vendorId": 16,
+    "orderAmount": 3897.48,
+    "customerName": "Ava Wilson",
+    "customerCity": "Baltimore",
+    "customerState": "MD",
+    "customerPhone": "7025552686",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5097,
+    "vendorId": 53,
+    "orderAmount": 4243.59,
+    "customerName": "Willowbrook Wholesale Foods",
+    "customerCity": "Atlanta",
+    "customerState": "GA",
+    "customerPhone": "6785558854",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5098,
+    "vendorId": 90,
+    "orderAmount": 4583.7,
+    "customerName": "Lucas Allen",
+    "customerCity": "Minneapolis",
+    "customerState": "MN",
+    "customerPhone": "8015551710",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5099,
+    "vendorId": 127,
+    "orderAmount": 14404.81,
+    "customerName": "Oakdale Property Management",
+    "customerCity": "Seattle",
+    "customerState": "WA",
+    "customerPhone": "2065559249",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5100,
+    "vendorId": 24,
+    "orderAmount": 1612.04,
+    "customerName": "Evelyn Martin",
+    "customerCity": "Philadelphia",
+    "customerState": "PA",
+    "customerPhone": "4125558680",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5101,
+    "vendorId": 61,
+    "orderAmount": 3703.02,
+    "customerName": "Hampton Machine Shop",
+    "customerCity": "San Francisco",
+    "customerState": "CA",
+    "customerPhone": "2135556748",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5102,
+    "vendorId": 98,
+    "orderAmount": 1101.73,
+    "customerName": "Emma Taylor",
+    "customerCity": "Columbus",
+    "customerState": "OH",
+    "customerPhone": "6145555363",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5103,
+    "vendorId": 135,
+    "orderAmount": 9173.96,
+    "customerName": "Palmer Business Solutions",
+    "customerCity": "New York",
+    "customerState": "NY",
+    "customerPhone": "2125551461",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5104,
+    "vendorId": 32,
+    "orderAmount": 4220.31,
+    "customerName": "Ethan Williams",
+    "customerCity": "Portland",
+    "customerState": "OR",
+    "customerPhone": "4105559377",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5105,
+    "vendorId": 69,
+    "orderAmount": 9612.82,
+    "customerName": "Orchard Courier Services",
+    "customerCity": "Tampa",
+    "customerState": "FL",
+    "customerPhone": "3055557999",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5106,
+    "vendorId": 106,
+    "orderAmount": 4374.79,
+    "customerName": "Charlotte Lewis",
+    "customerCity": "Miami",
+    "customerState": "FL",
+    "customerPhone": "4075555445",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5107,
+    "vendorId": 3,
+    "orderAmount": 3637.89,
+    "customerName": "Meridian Safety Equipment",
+    "customerCity": "Detroit",
+    "customerState": "MI",
+    "customerPhone": "7025559389",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5108,
+    "vendorId": 40,
+    "orderAmount": 8847.15,
+    "customerName": "Olivia Thomas",
+    "customerCity": "Denver",
+    "customerState": "CO",
+    "customerPhone": "7205554848",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5109,
+    "vendorId": 77,
+    "orderAmount": 1405.58,
+    "customerName": "Caledonia Home Improvement",
+    "customerCity": "San Diego",
+    "customerState": "CA",
+    "customerPhone": "6195551392",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5110,
+    "vendorId": 114,
+    "orderAmount": 15937.39,
+    "customerName": "Mason Davis",
+    "customerCity": "Chicago",
+    "customerState": "IL",
+    "customerPhone": "3125558398",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5111,
+    "vendorId": 11,
+    "orderAmount": 10180.94,
+    "customerName": "Edison Water Services",
+    "customerCity": "Nashville",
+    "customerState": "TN",
+    "customerPhone": "7025552216",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5112,
+    "vendorId": 48,
+    "orderAmount": 7191,
+    "customerName": "Harper Hall",
+    "customerCity": "Austin",
+    "customerState": "TX",
+    "customerPhone": "7135555238",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5113,
+    "vendorId": 85,
+    "orderAmount": 9953.05,
+    "customerName": "Louisville Pest Control",
+    "customerCity": "Charlotte",
+    "customerState": "NC",
+    "customerPhone": "9195554576",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5114,
+    "vendorId": 122,
+    "orderAmount": 17058.42,
+    "customerName": "Grace White",
+    "customerCity": "Boston",
+    "customerState": "MA",
+    "customerPhone": "5085551093",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5115,
+    "vendorId": 19,
+    "orderAmount": 8961.42,
+    "customerName": "Waltham Facility Maintenance",
+    "customerCity": "Phoenix",
+    "customerState": "AZ",
+    "customerPhone": "6025551357",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5116,
+    "vendorId": 56,
+    "orderAmount": 7170.68,
+    "customerName": "Ava Wilson",
+    "customerCity": "Baltimore",
+    "customerState": "MD",
+    "customerPhone": "6025557463",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5117,
+    "vendorId": 93,
+    "orderAmount": 4000.96,
+    "customerName": "Saratoga Paper Products",
+    "customerCity": "Atlanta",
+    "customerState": "GA",
+    "customerPhone": "6785551466",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5118,
+    "vendorId": 130,
+    "orderAmount": 6924.49,
+    "customerName": "Lucas Allen",
+    "customerCity": "Minneapolis",
+    "customerState": "MN",
+    "customerPhone": "2025550888",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5119,
+    "vendorId": 27,
+    "orderAmount": 13956.25,
+    "customerName": "Northwood Security Systems",
+    "customerCity": "Seattle",
+    "customerState": "WA",
+    "customerPhone": "2065551860",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5120,
+    "vendorId": 64,
+    "orderAmount": 11082.61,
+    "customerName": "Evelyn Martin",
+    "customerCity": "Philadelphia",
+    "customerState": "PA",
+    "customerPhone": "2155559441",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5121,
+    "vendorId": 101,
+    "orderAmount": 5053.63,
+    "customerName": "Whitman Appliance Repair",
+    "customerCity": "San Francisco",
+    "customerState": "CA",
+    "customerPhone": "4155559948",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5122,
+    "vendorId": 138,
+    "orderAmount": 16186.05,
+    "customerName": "Emma Taylor",
+    "customerCity": "Columbus",
+    "customerState": "OH",
+    "customerPhone": "6145558537",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5123,
+    "vendorId": 35,
+    "orderAmount": 2508.59,
+    "customerName": "Rosewood Construction",
+    "customerCity": "New York",
+    "customerState": "NY",
+    "customerPhone": "2125552637",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5124,
+    "vendorId": 72,
+    "orderAmount": 6485.38,
+    "customerName": "Ethan Williams",
+    "customerCity": "Portland",
+    "customerState": "OR",
+    "customerPhone": "9015559673",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5125,
+    "vendorId": 109,
+    "orderAmount": 13998.13,
+    "customerName": "Durham Logistics",
+    "customerCity": "Tampa",
+    "customerState": "FL",
+    "customerPhone": "4075550689",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5126,
+    "vendorId": 6,
+    "orderAmount": 16483.38,
+    "customerName": "Charlotte Lewis",
+    "customerCity": "Miami",
+    "customerState": "FL",
+    "customerPhone": "3055553481",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5127,
+    "vendorId": 43,
+    "orderAmount": 8333.02,
+    "customerName": "Prescott Retail Supply",
+    "customerCity": "Detroit",
+    "customerState": "MI",
+    "customerPhone": "9015554679",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5128,
+    "vendorId": 80,
+    "orderAmount": 323.8,
+    "customerName": "Olivia Thomas",
+    "customerCity": "Denver",
+    "customerState": "CO",
+    "customerPhone": "7205559076",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5129,
+    "vendorId": 117,
+    "orderAmount": 10149.76,
+    "customerName": "Brookside Commercial Painting",
+    "customerCity": "San Diego",
+    "customerState": "CA",
+    "customerPhone": "4155556031",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5130,
+    "vendorId": 14,
+    "orderAmount": 7758.82,
+    "customerName": "Mason Davis",
+    "customerCity": "Chicago",
+    "customerState": "IL",
+    "customerPhone": "7735559467",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5131,
+    "vendorId": 51,
+    "orderAmount": 651.13,
+    "customerName": "Harrison Metal Fabrication",
+    "customerCity": "Nashville",
+    "customerState": "TN",
+    "customerPhone": "6025550739",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5132,
+    "vendorId": 88,
+    "orderAmount": 6359.76,
+    "customerName": "Harper Hall",
+    "customerCity": "Austin",
+    "customerState": "TX",
+    "customerPhone": "5125557551",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5133,
+    "vendorId": 125,
+    "orderAmount": 15892.08,
+    "customerName": "Tiverton Restaurant Supply",
+    "customerCity": "Charlotte",
+    "customerState": "NC",
+    "customerPhone": "9195555992",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5134,
+    "vendorId": 22,
+    "orderAmount": 793.93,
+    "customerName": "Grace White",
+    "customerCity": "Boston",
+    "customerState": "MA",
+    "customerPhone": "6175555610",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5135,
+    "vendorId": 59,
+    "orderAmount": 3306.73,
+    "customerName": "Fairfield Agricultural Supply",
+    "customerCity": "Phoenix",
+    "customerState": "AZ",
+    "customerPhone": "4105553000",
+    "status": "Pending"
+  },
+  {
+    "orderId": 5136,
+    "vendorId": 96,
+    "orderAmount": 3112.08,
+    "customerName": "Ava Wilson",
+    "customerCity": "Baltimore",
+    "customerState": "MD",
+    "customerPhone": "4105556132",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5137,
+    "vendorId": 133,
+    "orderAmount": 14384.94,
+    "customerName": "Glenwood IT Services",
+    "customerCity": "Atlanta",
+    "customerState": "GA",
+    "customerPhone": "4045554471",
+    "status": "Shipped"
+  },
+  {
+    "orderId": 5138,
+    "vendorId": 30,
+    "orderAmount": 5621.43,
+    "customerName": "Lucas Allen",
+    "customerCity": "Minneapolis",
+    "customerState": "MN",
+    "customerPhone": "9015553629",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5139,
+    "vendorId": 67,
+    "orderAmount": 12361.64,
+    "customerName": "Glendale Janitorial Services",
+    "customerCity": "Seattle",
+    "customerState": "WA",
+    "customerPhone": "4255558861",
+    "status": "Delivered"
+  },
+  {
+    "orderId": 5140,
+    "vendorId": 104,
+    "orderAmount": 12193.43,
+    "customerName": "Evelyn Martin",
+    "customerCity": "Philadelphia",
+    "customerState": "PA",
+    "customerPhone": "2155559168",
+    "status": "Pending"
+  }
+]);
+
+/**
+ * Inserts the sample orders into PostgreSQL without duplicates.
+ * Safe to run multiple times.
+ */
+export async function seedDemoOrders(db) {
+  let inserted = 0;
+  for (const o of DEMO_ORDERS) {
+    const res = await db.query(
+      `INSERT INTO orders (order_id, vendor_id, order_amount, customer_name, customer_city, customer_state, customer_phone, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (order_id) DO NOTHING`,
+      [o.orderId, o.vendorId, o.orderAmount, o.customerName, o.customerCity, o.customerState, o.customerPhone, o.status]
+    );
+    if (res.rowCount > 0) inserted++;
+  }
+
+  // Update sequence to max order_id so subsequent manual adds dont collide
+  try {
+    await db.query(`SELECT setval(pg_get_serial_sequence('orders', 'order_id'), coalesce(max(order_id), 1)) FROM orders;`);
+  } catch {
+    // Ignore if not a serial sequence in custom db setup
+  }
+
+  return inserted;
+}
