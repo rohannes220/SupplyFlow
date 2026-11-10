@@ -39,6 +39,10 @@ pnpm dev:web    # UI on http://localhost:5173 (proxies /api to the API)
 
 `pnpm lint` and `pnpm test` run checks for every package. Set `TEST_DATABASE_URL` to also run the PostgreSQL model tests.
 
+New orders must reference an existing Active vendor. Editing a draft to use a different
+vendor also requires that vendor to be Active; existing references are retained if a
+vendor is later deactivated. The order form displays a field error for an invalid vendor.
+
 ## Deployment
 
 The frontend is served by **Vercel**. The API and a PostgreSQL 16 database run on **Render**. Vercel forwards every `/api/*` request to Render (see `frontend/vercel.json`), so the browser only ever talks to one origin and no CORS setup is needed.

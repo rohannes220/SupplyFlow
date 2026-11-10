@@ -4,6 +4,7 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { createApp } from '../../app.js';
 import { createInMemoryOrderModel, validOrderBody } from '../helpers/inMemoryOrderModel.js';
+import { createInMemoryVendorModel, vendorRow } from '../helpers/inMemoryVendorModel.js';
 import {
   createInMemoryUserModel,
   demoUsers,
@@ -33,6 +34,7 @@ describe('/api/orders security', () => {
     );
     app = createApp({
       orderModel,
+      vendorModel: createInMemoryVendorModel([vendorRow({ id: 3 })]),
       userModel: createInMemoryUserModel(),
       jwtSecret: TEST_JWT_SECRET,
     });

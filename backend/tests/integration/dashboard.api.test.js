@@ -91,7 +91,7 @@ describe('GET /api/dashboard', () => {
     await request(app)
       .post('/api/orders')
       .set('Authorization', auth)
-      .send({ ...validOrderBody, orderAmount: 49.5 });
+      .send({ ...validOrderBody, vendorId: 1, orderAmount: 49.5 });
 
     const res = await request(app).get('/api/dashboard').set('Authorization', auth);
     expect(res.body.totalOrders).toBe(4);

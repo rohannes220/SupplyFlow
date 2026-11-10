@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import pg from 'pg';
 import { readFile } from 'node:fs/promises';
+import { randomBytes } from 'node:crypto';
 import { createOrderModel } from '../../models/orderModel.js';
 
 const url = process.env.TEST_DATABASE_URL;
@@ -9,6 +10,8 @@ const url = process.env.TEST_DATABASE_URL;
 describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
   let pool;
   let model;
+  let adminPool;
+  const schema = `order_test_${randomBytes(8).toString('hex')}`;
   const order = {
     vendorId: 3,
     orderAmount: 1234.56,
@@ -19,13 +22,17 @@ describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
   };
 
   beforeAll(async () => {
-    pool = new pg.Pool({ connectionString: url });
-    const sql = await readFile(
-      new URL('../../db/migrations/001_create_orders.sql', import.meta.url),
-      'utf8',
+    adminPool = new pg.Pool({ connectionString: url });
+    await adminPool.query(`CREATE SCHEMA "${schema}"`);
+    pool = new pg.Pool({ connectionString: url, options: `-c search_path=${schema}` });
+    for (const migration of ['001_create_orders.sql', '003_create_vendors.sql']) {
+      await pool.query(
+        await readFile(new URL(`../../db/migrations/${migration}`, import.meta.url), 'utf8'),
+      );
+    }
+    await pool.query(
+      "INSERT INTO vendors (id, name, email, phone, city, state, status) VALUES (3, 'Vendor', 'vendor@example.com', '5551234567', 'Atlanta', 'GA', 'Active')",
     );
-    await pool.query('DROP TABLE IF EXISTS orders');
-    await pool.query(sql);
     model = createOrderModel(pool);
   });
 
@@ -35,6 +42,10 @@ describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
 
   afterAll(async () => {
     await pool?.end();
+    if (adminPool) {
+      await adminPool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+      await adminPool.end();
+    }
   });
 
   it('runs a full create/read/update/delete cycle', async () => {

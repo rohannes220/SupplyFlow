@@ -66,7 +66,7 @@ export function createApp({
   }
 
   // Every order route requires login; per-status role rules live in orderService.
-  const orderController = createOrderController(createOrderService(orderModel));
+  const orderController = createOrderController(createOrderService(orderModel, vendorModel));
   app.use('/api/orders', requireAuth(authService), createOrderRoutes(orderController));
 
   app.use(notFoundHandler);
