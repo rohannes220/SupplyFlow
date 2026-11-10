@@ -29,7 +29,15 @@ function parseOrderId(rawId) {
   return id;
 }
 
-export function createOrderService(orderModel) {
+export function createOrderService(orderModel, vendorModel) {
+  async function assertActiveVendor(vendorId) {
+    if (!vendorModel) throw new Error('Vendor model is required to validate orders');
+    if (!(await vendorModel.isActive(vendorId))) {
+      throw new ValidationError([
+        { field: 'vendorId', message: 'Select an existing active vendor' },
+      ]);
+    }
+  }
   async function findExisting(rawId) {
     const id = parseOrderId(rawId);
     const order = await orderModel.findById(id);
@@ -55,8 +63,15 @@ export function createOrderService(orderModel) {
     },
 
     async createOrder(body) {
-      // TODO(#4): verify vendorId refers to an existing, Active vendor.
-      return orderModel.create(validateOrderInput(body));
+      const fields = validateOrderInput(body);
+      await assertActiveVendor(fields.vendorId);
+      const created = await orderModel.create(fields);
+      if (!created) {
+        throw new ValidationError([
+          { field: 'vendorId', message: 'Select an existing active vendor' },
+        ]);
+      }
+      return created;
     },
 
     async updateOrder(rawId, body) {
@@ -64,8 +79,16 @@ export function createOrderService(orderModel) {
       const fields = validateOrderInput(body);
       assertEditable(existing, 'edited');
       // TODO(#7): restrict edits to the employee who created the order.
+      if (fields.vendorId !== existing.vendorId) await assertActiveVendor(fields.vendorId);
       const updated = await orderModel.update(existing.orderId, fields);
-      if (!updated) throw new NotFoundError(`Order ${existing.orderId} not found`);
+      if (!updated) {
+        if (!(await orderModel.findById(existing.orderId))) {
+          throw new NotFoundError(`Order ${existing.orderId} not found`);
+        }
+        throw new ValidationError([
+          { field: 'vendorId', message: 'Select an existing active vendor' },
+        ]);
+      }
       return updated;
     },
 

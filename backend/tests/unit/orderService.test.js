@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createOrderService } from '../../services/orderService.js';
 import { NotFoundError, ValidationError, ConflictError } from '../../utils/errors.js';
 import { createInMemoryOrderModel, validOrderBody } from '../helpers/inMemoryOrderModel.js';
+import { createInMemoryVendorModel, vendorRow } from '../helpers/inMemoryVendorModel.js';
 
 describe('orderService', () => {
   let model;
@@ -9,7 +10,7 @@ describe('orderService', () => {
 
   beforeEach(() => {
     model = createInMemoryOrderModel();
-    service = createOrderService(model);
+    service = createOrderService(model, createInMemoryVendorModel([vendorRow({ id: 3 })]));
   });
 
   it('creates an order with a generated id and Draft status', async () => {

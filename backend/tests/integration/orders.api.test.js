@@ -3,6 +3,7 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { createApp } from '../../app.js';
 import { createInMemoryOrderModel, validOrderBody } from '../helpers/inMemoryOrderModel.js';
+import { createInMemoryVendorModel, vendorRow } from '../helpers/inMemoryVendorModel.js';
 import {
   createInMemoryUserModel,
   demoUsers,
@@ -17,7 +18,12 @@ const EMPLOYEE_AUTH = `Bearer ${jwt.sign({ role: 'employee' }, TEST_JWT_SECRET, 
 })}`;
 
 const buildApp = (deps) =>
-  createApp({ userModel: createInMemoryUserModel(), jwtSecret: TEST_JWT_SECRET, ...deps });
+  createApp({
+    userModel: createInMemoryUserModel(),
+    vendorModel: createInMemoryVendorModel([vendorRow({ id: 3 })]),
+    jwtSecret: TEST_JWT_SECRET,
+    ...deps,
+  });
 
 function asEmployee(app) {
   const withAuth = (method) => (url) =>

@@ -12,7 +12,7 @@ const wrap = (handler) => (req, res, next) => Promise.resolve(handler(req, res, 
  *       additionalProperties: false
  *       required: [vendorId, orderAmount, customerName, customerCity, customerState, customerPhone]
  *       properties:
- *         vendorId: { type: integer, minimum: 1, example: 3 }
+ *         vendorId: { type: integer, minimum: 1, example: 3, description: New or changed vendor must exist and be Active. }
  *         orderAmount: { type: number, exclusiveMinimum: 0, maximum: 9999999999.99, multipleOf: 0.01, example: 2250.5 }
  *         customerName: { type: string, maxLength: 100, example: Sarah Chen }
  *         customerCity: { type: string, maxLength: 100, example: Atlanta }

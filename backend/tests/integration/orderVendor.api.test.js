@@ -66,4 +66,15 @@ describe('order vendor validation', () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ vendorId: 3, customerCity: 'Boston' });
   });
+
+  it('does not silently accept a vendor when validation is unavailable', async () => {
+    app = createApp({
+      orderModel: orders,
+      userModel: createInMemoryUserModel(),
+      jwtSecret: TEST_JWT_SECRET,
+      logger: { error() {} },
+    });
+    expect((await post(validOrderBody)).status).toBe(500);
+    expect(await orders.findAll()).toHaveLength(0);
+  });
 });
