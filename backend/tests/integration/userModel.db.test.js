@@ -5,12 +5,15 @@ import bcrypt from 'bcryptjs';
 import { readFile } from 'node:fs/promises';
 import { createUserModel } from '../../models/userModel.js';
 import { seedDemoUsers } from '../../db/seeds/demoUsers.js';
+import { randomBytes } from 'node:crypto';
 
 const url = process.env.TEST_DATABASE_URL;
 
 describe.skipIf(!url)('userModel (PostgreSQL)', () => {
   let pool;
   let model;
+  let adminPool;
+  const schema = `user_test_${randomBytes(8).toString('hex')}`;
   const insert = (email, role = 'employee') =>
     pool.query(
       'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id',
@@ -18,12 +21,13 @@ describe.skipIf(!url)('userModel (PostgreSQL)', () => {
     );
 
   beforeAll(async () => {
-    pool = new pg.Pool({ connectionString: url });
+    adminPool = new pg.Pool({ connectionString: url });
+    await adminPool.query(`CREATE SCHEMA "${schema}"`);
+    pool = new pg.Pool({ connectionString: url, options: `-c search_path=${schema}` });
     const sql = await readFile(
       new URL('../../db/migrations/002_create_users.sql', import.meta.url),
       'utf8',
     );
-    await pool.query('DROP TABLE IF EXISTS users');
     await pool.query(sql);
     model = createUserModel(pool);
   });
@@ -34,6 +38,10 @@ describe.skipIf(!url)('userModel (PostgreSQL)', () => {
 
   afterAll(async () => {
     await pool?.end();
+    if (adminPool) {
+      await adminPool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+      await adminPool.end();
+    }
   });
 
   it('finds a user by email and by id, mapping columns to camelCase', async () => {

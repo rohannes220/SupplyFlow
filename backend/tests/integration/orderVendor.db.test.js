@@ -33,13 +33,28 @@ describe.skipIf(!url)('order vendor validation with PostgreSQL', () => {
       connectionString: url,
       options: `-c search_path=${schema} -c application_name=${schema}`,
     });
-    for (const migration of ['001_create_orders.sql', '003_create_vendors.sql']) {
+    for (const migration of [
+      '001_create_orders.sql',
+      '002_create_users.sql',
+      '003_create_vendors.sql',
+      '003_order_owner.sql',
+    ]) {
       await pool.query(
         await readFile(new URL(`../../db/migrations/${migration}`, import.meta.url), 'utf8'),
       );
     }
     await pool.query(
       "INSERT INTO vendors (id, name, email, phone, city, state, status) VALUES (3, 'Active Vendor', 'active@example.com', '5551234567', 'Atlanta', 'GA', 'Active'), (4, 'Inactive Vendor', 'inactive@example.com', '5551234568', 'Atlanta', 'GA', 'Inactive')",
+    );
+    await pool.query(
+      'INSERT INTO users (id, name, email, password_hash, role) VALUES ($1, $2, $3, $4, $5)',
+      [
+        demoUsers.employee.id,
+        demoUsers.employee.name,
+        demoUsers.employee.email,
+        'test-hash',
+        'employee',
+      ],
     );
     app = createApp({
       orderModel: createOrderModel(pool),

@@ -17,21 +17,21 @@ export function createInMemoryOrderModel(seed = []) {
       rows.push(row);
       return { ...row };
     },
-    async update(orderId, order) {
+    async update(orderId, order, expectedStatus) {
       const index = rows.findIndex((r) => r.orderId === orderId);
-      if (index === -1) return null;
+      if (index === -1 || rows[index].status !== expectedStatus) return null;
       rows[index] = { ...rows[index], ...order, updatedAt: new Date().toISOString() };
       return { ...rows[index] };
     },
-    async updateStatus(orderId, status) {
+    async updateStatus(orderId, status, expectedStatus) {
       const index = rows.findIndex((r) => r.orderId === orderId);
-      if (index === -1) return null;
+      if (index === -1 || rows[index].status !== expectedStatus) return null;
       rows[index] = { ...rows[index], status, updatedAt: new Date().toISOString() };
       return { ...rows[index] };
     },
-    async remove(orderId) {
+    async remove(orderId, expectedStatus) {
       const before = rows.length;
-      rows = rows.filter((r) => r.orderId !== orderId);
+      rows = rows.filter((r) => r.orderId !== orderId || r.status !== expectedStatus);
       return rows.length < before;
     },
   };

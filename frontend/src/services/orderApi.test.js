@@ -14,8 +14,13 @@ afterEach(() => vi.restoreAllMocks());
 describe('orderApi', () => {
   it('lists orders', async () => {
     mockFetch(200, [{ orderId: 1 }]);
-    expect(await listOrders()).toEqual([{ orderId: 1 }]);
-    expect(fetch).toHaveBeenCalledWith('/api/orders', expect.any(Object));
+    expect(await listOrders('session-token')).toEqual([{ orderId: 1 }]);
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/orders',
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer session-token' }),
+      }),
+    );
   });
 
   it('posts a new order as JSON', async () => {

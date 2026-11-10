@@ -9,16 +9,15 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, init = {}) {
-  // /api/orders requires login; read the token per call so a new login is picked up.
-  const token = tokenStore.read();
+async function request(path, init = {}, token) {
+  const authToken = token ?? tokenStore.read();
   let res;
   try {
     res = await fetch(path, {
       ...init,
       headers: {
         Accept: 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(authToken ? { Authorization: 'Bearer ' + authToken } : {}),
         ...init.headers,
       },
     });
@@ -36,28 +35,46 @@ async function request(path, init = {}) {
   return body;
 }
 
-export function listOrders() {
-  return request('/api/orders');
+export function listOrders(token) {
+  return request('/api/orders', {}, token);
 }
 
-export function createOrder(input) {
-  return request('/api/orders', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
+export function createOrder(input, token) {
+  return request(
+    '/api/orders',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+    token,
+  );
 }
 
-export function updateOrderStatus(orderId, status) {
-  return request(`/api/orders/${orderId}/status`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status }),
-  });
+export function updateOrder(orderId, input, token) {
+  return request(
+    `/api/orders/${orderId}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+    token,
+  );
 }
 
-export function deleteOrder(orderId) {
-  return request(`/api/orders/${orderId}`, {
-    method: 'DELETE',
-  });
+export function updateOrderStatus(orderId, status, token) {
+  return request(
+    `/api/orders/${orderId}/status`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    },
+    token,
+  );
+}
+
+export function deleteOrder(orderId, token) {
+  return request(`/api/orders/${orderId}`, { method: 'DELETE' }, token);
 }

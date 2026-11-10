@@ -1,23 +1,27 @@
 // The saved login token, shared by AuthContext (which manages it) and API clients (which send it).
 export const TOKEN_STORAGE_KEY = 'supplyflow_token';
 
-// Storage can throw (e.g. blocked in private mode); treat that as "no saved session".
+let fallbackToken = null;
+
+// Storage can throw (e.g. blocked in private mode); retain the active token in memory.
 export const tokenStore = {
   read() {
     try {
-      return localStorage.getItem(TOKEN_STORAGE_KEY);
+      return fallbackToken ?? localStorage.getItem(TOKEN_STORAGE_KEY);
     } catch {
-      return null;
+      return fallbackToken;
     }
   },
   write(token) {
+    fallbackToken = null;
     try {
       localStorage.setItem(TOKEN_STORAGE_KEY, token);
     } catch {
-      // The session still works until the page is reloaded.
+      fallbackToken = token;
     }
   },
   clear() {
+    fallbackToken = null;
     try {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
     } catch {

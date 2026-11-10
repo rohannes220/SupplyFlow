@@ -4,11 +4,13 @@ const BEARER = /^Bearer (\S+)$/;
 
 /** Verifies the Bearer JWT and sets req.user = { id, role }. Responds 401 otherwise. */
 export function requireAuth(authService) {
-  return (req, _res, next) => {
+  return async (req, _res, next) => {
     const match = BEARER.exec(req.get('Authorization') ?? '');
     if (!match) return next(new UnauthorizedError());
     try {
-      req.user = authService.verifyToken(match[1]);
+      const { id } = authService.verifyToken(match[1]);
+      const user = await authService.getCurrentUser(id);
+      req.user = { id: user.id, role: user.role };
       return next();
     } catch (err) {
       return next(err);

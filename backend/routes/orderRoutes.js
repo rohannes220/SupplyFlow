@@ -30,6 +30,7 @@ const wrap = (handler) => (req, res, next) => Promise.resolve(handler(req, res, 
  *         customerState: { type: string, example: GA }
  *         customerPhone: { type: string, example: '4045550123' }
  *         status: { type: string, enum: [Draft, Pending, Approved, Shipped, Delivered, Cancelled] }
+ *         createdBy: { type: integer, nullable: true, description: Creator user ID; null for legacy orders }
  *         createdAt: { type: string, format: date-time }
  *         updatedAt: { type: string, format: date-time }
  *     Error:
@@ -59,11 +60,13 @@ export function createOrderRoutes(controller) {
    * /api/orders:
    *   get:
    *     tags: [Orders]
+   *     security: [{ bearerAuth: [] }]
    *     summary: List orders, newest first
    *     responses:
    *       200: { description: Orders, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Order' } } } } }
    *   post:
    *     tags: [Orders]
+   *     security: [{ bearerAuth: [] }]
    *     summary: Create a Draft order (US customers only)
    *     requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/OrderInput' } } } }
    *     responses:
@@ -78,6 +81,7 @@ export function createOrderRoutes(controller) {
    * /api/orders/{id}:
    *   get:
    *     tags: [Orders]
+   *     security: [{ bearerAuth: [] }]
    *     summary: Get one order
    *     parameters: [{ $ref: '#/components/parameters/OrderId' }]
    *     responses:
@@ -86,6 +90,7 @@ export function createOrderRoutes(controller) {
    *       404: { $ref: '#/components/responses/NotFound' }
    *   put:
    *     tags: [Orders]
+   *     security: [{ bearerAuth: [] }]
    *     summary: Replace a Draft order's fields
    *     parameters: [{ $ref: '#/components/parameters/OrderId' }]
    *     requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/OrderInput' } } } }
@@ -96,6 +101,7 @@ export function createOrderRoutes(controller) {
    *       409: { $ref: '#/components/responses/Conflict' }
    *   delete:
    *     tags: [Orders]
+   *     security: [{ bearerAuth: [] }]
    *     summary: Delete a Draft order
    *     parameters: [{ $ref: '#/components/parameters/OrderId' }]
    *     responses:
@@ -103,6 +109,21 @@ export function createOrderRoutes(controller) {
    *       400: { $ref: '#/components/responses/BadRequest' }
    *       404: { $ref: '#/components/responses/NotFound' }
    *       409: { $ref: '#/components/responses/Conflict' }
+   */
+  /**
+   * @openapi
+   * /api/orders/{id}/status:
+   *   patch:
+   *     tags: [Orders]
+   *     summary: Transition order status according to role and ownership
+   *     security: [{ bearerAuth: [] }]
+   *     parameters: [{ $ref: '#/components/parameters/OrderId' }]
+   *     requestBody: { required: true, content: { application/json: { schema: { type: object, required: [status], properties: { status: { type: string } } } } } }
+   *     responses:
+   *       200: { description: Updated order }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
    */
   router.get('/:id', wrap(controller.get));
   router.put('/:id', wrap(controller.update));

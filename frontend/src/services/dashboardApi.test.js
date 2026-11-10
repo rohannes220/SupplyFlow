@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getDashboard } from './dashboardApi.js';
 import { ApiError } from './orderApi.js';
-import { TOKEN_STORAGE_KEY } from './tokenStore.js';
+import { TOKEN_STORAGE_KEY, tokenStore } from './tokenStore.js';
 
 function mockFetch(status, body) {
   globalThis.fetch = vi.fn().mockResolvedValue({
@@ -13,8 +13,14 @@ function mockFetch(status, body) {
 
 const metrics = { totalOrders: 3, pendingOrders: 1, overdueDeliveries: null };
 
-beforeEach(() => localStorage.clear());
-afterEach(() => vi.restoreAllMocks());
+beforeEach(() => {
+  localStorage.clear();
+  tokenStore.clear();
+});
+afterEach(() => {
+  vi.restoreAllMocks();
+  tokenStore.clear();
+});
 
 describe('dashboardApi.getDashboard', () => {
   it('GETs /api/dashboard and returns the metrics', async () => {
@@ -30,6 +36,18 @@ describe('dashboardApi.getDashboard', () => {
     mockFetch(200, metrics);
     await getDashboard();
     expect(fetch.mock.calls[0][1].headers.Authorization).toBe('Bearer jwt-abc');
+  });
+
+  it('sends the in-memory token when storage is unavailable', async () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('Storage unavailable');
+    });
+    tokenStore.write('volatile-jwt');
+    mockFetch(200, metrics);
+
+    await getDashboard();
+
+    expect(fetch.mock.calls[0][1].headers.Authorization).toContain('volatile-jwt');
   });
 
   it('throws ApiError with status 401 when the session has expired', async () => {

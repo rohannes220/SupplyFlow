@@ -14,6 +14,7 @@ const seed = () =>
     ...validOrderBody,
     customerPhone: '4045550123',
     status,
+    createdBy: employee.id,
   }));
 const idOf = (status) => String(STATUSES.indexOf(status) + 1);
 

@@ -10,12 +10,10 @@ import {
   TEST_JWT_SECRET,
 } from '../helpers/inMemoryUserModel.js';
 
-// /api/orders requires login (#2), so every request here is made by a logged-in employee.
-// Unauthenticated and role-specific cases live in orderSecurity.api.test.js.
-const EMPLOYEE_AUTH = `Bearer ${jwt.sign({ role: 'employee' }, TEST_JWT_SECRET, {
+const employeeToken = jwt.sign({ role: 'employee' }, TEST_JWT_SECRET, {
   subject: String(demoUsers.employee.id),
   expiresIn: '1h',
-})}`;
+});
 
 const buildApp = (deps) =>
   createApp({
@@ -26,8 +24,10 @@ const buildApp = (deps) =>
   });
 
 function asEmployee(app) {
-  const withAuth = (method) => (url) =>
-    request(app)[method](url).set('Authorization', EMPLOYEE_AUTH);
+  const withAuth = (method) => (url) => {
+    const employeeRequest = request(app)[method](url);
+    return employeeRequest.set('Authorization', 'Bearer ' + employeeToken);
+  };
   return {
     get: withAuth('get'),
     post: withAuth('post'),
@@ -62,6 +62,7 @@ describe('/api/orders', () => {
         customerState: 'GA',
         customerPhone: '4045550123',
         status: 'Draft',
+        createdBy: demoUsers.employee.id,
       });
     });
 
@@ -167,7 +168,13 @@ describe('/api/orders', () => {
   it('returns 409 when editing or deleting an order that is no longer Draft', async () => {
     app = buildApp({
       orderModel: createInMemoryOrderModel([
-        { orderId: 5, ...validOrderBody, customerPhone: '4045550123', status: 'Shipped' },
+        {
+          orderId: 5,
+          ...validOrderBody,
+          customerPhone: '4045550123',
+          status: 'Shipped',
+          createdBy: demoUsers.employee.id,
+        },
       ]),
     });
     expect((await asEmployee(app).put('/api/orders/5').send(validOrderBody)).status).toBe(409);

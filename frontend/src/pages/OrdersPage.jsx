@@ -3,9 +3,8 @@ import * as orderApi from '../services/orderApi.js';
 import Modal from '../components/Modal.jsx';
 import OrderForm from '../components/OrderForm.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
-import RoleGate from '../components/RoleGate.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { ADMIN_ONLY_STATUSES, allowedNextStatuses } from '@supplyflow/shared/orderRules';
+import { allowedNextStatuses } from '@supplyflow/shared/orderRules';
 import { formatCurrency, formatUsPhone } from '../utils/format.js';
 
 const COLUMNS = [
@@ -20,18 +19,21 @@ const COLUMNS = [
   'Actions',
 ];
 
-// Only Draft orders can be deleted (the API returns 409 otherwise).
-const DELETABLE_STATUS = 'Draft';
+function allowedStatuses(order, user) {
+  const statuses = allowedNextStatuses(order.status, user?.role);
+  if (user?.role === 'admin') return statuses;
+  return order.createdBy === user?.id ? statuses : [];
+}
 
 export default function OrdersPage({ api = orderApi }) {
-  const { user } = useAuth();
-  const nextStatusesFor = (order) => allowedNextStatuses(order.status, user?.role);
-
+  const { user, token } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [editingOrder, setEditingOrder] = useState(null);
   const [notice, setNotice] = useState('');
+  const [actionError, setActionError] = useState('');
 
   // Sorting state: 'none', 'asc' (lowest to highest), 'desc' (highest to lowest)
   const [sortDirection, setSortDirection] = useState('none');
@@ -47,14 +49,14 @@ export default function OrdersPage({ api = orderApi }) {
   useEffect(() => {
     let active = true;
     api
-      .listOrders()
+      .listOrders(token)
       .then((data) => active && setOrders(data))
       .catch((err) => active && setLoadError(err.message))
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
     };
-  }, [api]);
+  }, [api, token]);
 
   const closeForm = useCallback(() => setShowForm(false), []);
   const closeUpdateModal = useCallback(() => setUpdatingOrder(null), []);
@@ -63,52 +65,62 @@ export default function OrdersPage({ api = orderApi }) {
   }, [isDeleting]);
 
   async function handleCreate(input) {
-    const created = await api.createOrder(input);
+    const created = await api.createOrder(input, token);
     setOrders((current) => [created, ...current]);
     setShowForm(false);
     setNotice(`Order #${created.orderId} added.`);
   }
 
+  async function handleEdit(input) {
+    const updated = await api.updateOrder(editingOrder.orderId, input, token);
+    setOrders((current) =>
+      current.map((order) => (order.orderId === updated.orderId ? updated : order)),
+    );
+    setEditingOrder(null);
+    setNotice(`Order #${updated.orderId} updated.`);
+  }
+
   // Handle Order Status Update
   function openUpdateModal(order) {
+    setActionError('');
     setUpdatingOrder(order);
-    setSelectedStatus(nextStatusesFor(order)[0] ?? '');
+    setSelectedStatus(allowedStatuses(order, user)[0]);
   }
 
   async function handleStatusSubmit(e) {
     e.preventDefault();
     if (!updatingOrder) return;
+    setActionError('');
     try {
-      await api.updateOrderStatus(updatingOrder.orderId, selectedStatus);
+      const updated = await api.updateOrderStatus(updatingOrder.orderId, selectedStatus, token);
       setOrders((current) =>
-        current.map((o) =>
-          o.orderId === updatingOrder.orderId ? { ...o, status: selectedStatus } : o,
-        ),
+        current.map((o) => (o.orderId === updatingOrder.orderId ? updated : o)),
       );
       setNotice(`Order #${updatingOrder.orderId} status updated to ${selectedStatus}.`);
       setUpdatingOrder(null);
     } catch (err) {
-      setLoadError(err.message || 'Failed to update order status');
+      setActionError(err.message || 'Failed to update order status');
     }
   }
 
   // Handle Order Delete with Verification Process
   function openDeleteModal(order) {
+    setActionError('');
     setDeletingOrder(order);
   }
 
   async function handleConfirmDelete() {
     if (!deletingOrder) return;
+    setActionError('');
     setIsDeleting(true);
     try {
-      // Never change the status to get around the Draft-only rule: the server decides.
-      await api.deleteOrder(deletingOrder.orderId);
+      await api.deleteOrder(deletingOrder.orderId, token);
 
       setOrders((current) => current.filter((o) => o.orderId !== deletingOrder.orderId));
       setNotice(`Order #${deletingOrder.orderId} was successfully deleted.`);
       setDeletingOrder(null);
     } catch (err) {
-      setLoadError(err.message || `Failed to delete order #${deletingOrder.orderId}`);
+      setActionError(err.message || `Failed to delete order #${deletingOrder.orderId}`);
     } finally {
       setIsDeleting(false);
     }
@@ -263,8 +275,8 @@ export default function OrdersPage({ api = orderApi }) {
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-right">
                   <div className="flex items-center gap-2">
-                    {/* Update: only when this user has a valid next status to offer */}
-                    {nextStatusesFor(order).length > 0 && (
+                    {/* Update Order Status Button */}
+                    {allowedStatuses(order, user).length > 0 && (
                       <button
                         type="button"
                         onClick={() => openUpdateModal(order)}
@@ -274,16 +286,27 @@ export default function OrdersPage({ api = orderApi }) {
                       </button>
                     )}
 
-                    {/* Delete: Draft orders only */}
-                    {order.status === DELETABLE_STATUS && (
-                      <button
-                        type="button"
-                        onClick={() => openDeleteModal(order)}
-                        className="rounded bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                      >
-                        Delete
-                      </button>
-                    )}
+                    {/* Delete Order Button */}
+                    {order.status === 'Draft' &&
+                      (user.role === 'admin' || order.createdBy === user.id) && (
+                        <button
+                          type="button"
+                          onClick={() => setEditingOrder(order)}
+                          className="rounded bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
+                        >
+                          Edit
+                        </button>
+                      )}
+                    {order.status === 'Draft' &&
+                      (user.role === 'admin' || order.createdBy === user.id) && (
+                        <button
+                          type="button"
+                          onClick={() => openDeleteModal(order)}
+                          className="rounded bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                        >
+                          Delete
+                        </button>
+                      )}
                   </div>
                 </td>
               </tr>
@@ -312,11 +335,25 @@ export default function OrdersPage({ api = orderApi }) {
           <OrderForm onSubmit={handleCreate} onCancel={closeForm} />
         </Modal>
       )}
+      {editingOrder && (
+        <Modal title={`Edit Order #${editingOrder.orderId}`} onClose={() => setEditingOrder(null)}>
+          <OrderForm
+            initialOrder={editingOrder}
+            onSubmit={handleEdit}
+            onCancel={() => setEditingOrder(null)}
+          />
+        </Modal>
+      )}
 
       {/* Update Order Status Modal */}
       {updatingOrder && (
         <Modal title={`Update Order #${updatingOrder.orderId} Status`} onClose={closeUpdateModal}>
           <form onSubmit={handleStatusSubmit} className="space-y-4">
+            {actionError && (
+              <p role="alert" className="text-sm text-red-700">
+                {actionError}
+              </p>
+            )}
             <div>
               <p className="text-sm text-slate-600">
                 Customer:{' '}
@@ -343,19 +380,11 @@ export default function OrdersPage({ api = orderApi }) {
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
-                {/* Valid next statuses; admin-only ones are hidden from employees. The API
-                    enforces the same rules (400 for invalid moves, 403 for roles). */}
-                {allowedNextStatuses(updatingOrder.status, 'admin').map((status) =>
-                  ADMIN_ONLY_STATUSES.includes(status) ? (
-                    <RoleGate key={status} roles={['admin']}>
-                      <option value={status}>{status}</option>
-                    </RoleGate>
-                  ) : (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ),
-                )}
+                {allowedStatuses(updatingOrder, user).map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -382,6 +411,11 @@ export default function OrdersPage({ api = orderApi }) {
       {deletingOrder && (
         <Modal title="Verification Required: Confirm Delete" onClose={closeDeleteModal}>
           <div className="space-y-4">
+            {actionError && (
+              <p role="alert" className="text-sm text-red-700">
+                {actionError}
+              </p>
+            )}
             <div className="rounded-lg border border-red-200 bg-red-50 p-4">
               <p className="text-sm font-medium text-red-900">
                 Are you sure you want to delete this order?

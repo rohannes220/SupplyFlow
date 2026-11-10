@@ -62,10 +62,10 @@ export function createOrderService(orderModel, vendorModel) {
       return findExisting(rawId);
     },
 
-    async createOrder(body) {
+    async createOrder(body, user) {
       const fields = validateOrderInput(body);
       await assertActiveVendor(fields.vendorId);
-      const created = await orderModel.create(fields);
+      const created = await orderModel.create({ ...fields, createdBy: user.id });
       if (!created) {
         throw new ValidationError([
           { field: 'vendorId', message: 'Select an existing active vendor' },
@@ -74,16 +74,20 @@ export function createOrderService(orderModel, vendorModel) {
       return created;
     },
 
-    async updateOrder(rawId, body) {
+    async updateOrder(rawId, body, user) {
       const existing = await findExisting(rawId);
+      if (user.role !== 'admin' && existing.createdBy !== user.id) throw new ForbiddenError();
       const fields = validateOrderInput(body);
       assertEditable(existing, 'edited');
-      // TODO(#7): restrict edits to the employee who created the order.
       if (fields.vendorId !== existing.vendorId) await assertActiveVendor(fields.vendorId);
-      const updated = await orderModel.update(existing.orderId, fields);
+      const updated = await orderModel.update(existing.orderId, fields, existing.status);
       if (!updated) {
-        if (!(await orderModel.findById(existing.orderId))) {
+        const current = await orderModel.findById(existing.orderId);
+        if (!current) {
           throw new NotFoundError(`Order ${existing.orderId} not found`);
+        }
+        if (current.status !== EDITABLE_STATUS) {
+          throw new ConflictError('Order changed; refresh and try again');
         }
         throw new ValidationError([
           { field: 'vendorId', message: 'Select an existing active vendor' },
@@ -93,11 +97,11 @@ export function createOrderService(orderModel, vendorModel) {
     },
 
     /**
-     * Moves an order along the status workflow on behalf of `actor` ({ id, role }).
+     * Moves an order along the status workflow on behalf of `user` ({ id, role }).
      * An invalid move is a 400, checked before the role (403), so clients learn the workflow
      * even when they lack permission.
      */
-    async updateOrderStatus(rawId, status, actor) {
+    async updateOrderStatus(rawId, status, user) {
       const existing = await findExisting(rawId);
       if (!ORDER_STATUSES.includes(status)) {
         throw new ValidationError([
@@ -112,21 +116,21 @@ export function createOrderService(orderModel, vendorModel) {
           },
         ]);
       }
-      if (!roleCanSetStatus(actor?.role, status)) {
+      if (!roleCanSetStatus(user?.role, status)) {
         throw new ForbiddenError(`Only admins can move an order to ${status}`);
       }
-      // TODO(#7): only the order's creator (or an admin) may submit or cancel it, once orders
-      // have a created_by column.
-      const updated = await orderModel.updateStatus(existing.orderId, status);
-      if (!updated) throw new NotFoundError(`Order ${existing.orderId} not found`);
+      if (user.role !== 'admin' && existing.createdBy !== user.id) throw new ForbiddenError();
+      const updated = await orderModel.updateStatus(existing.orderId, status, existing.status);
+      if (!updated) throw new ConflictError('Order changed; refresh and try again');
       return updated;
     },
 
-    async deleteOrder(rawId) {
+    async deleteOrder(rawId, user) {
       const existing = await findExisting(rawId);
+      if (user.role !== 'admin' && existing.createdBy !== user.id) throw new ForbiddenError();
       assertEditable(existing, 'deleted');
-      const removed = await orderModel.remove(existing.orderId);
-      if (!removed) throw new NotFoundError(`Order ${existing.orderId} not found`);
+      const removed = await orderModel.remove(existing.orderId, existing.status);
+      if (!removed) throw new ConflictError('Order changed; refresh and try again');
     },
   };
 }

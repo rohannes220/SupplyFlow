@@ -13,6 +13,9 @@ import { createDashboardController } from './controllers/dashboardController.js'
 import { createDashboardRoutes } from './routes/dashboardRoutes.js';
 import { requireAuth } from './middleware/auth.js';
 import { createErrorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { createUserService } from './services/userService.js';
+import { createUserController } from './controllers/userController.js';
+import { createUserRoutes } from './routes/userRoutes.js';
 
 /**
  * Builds the Express app. Dependencies are injected so tests can avoid PostgreSQL.
@@ -52,6 +55,10 @@ export function createApp({
 
   const authService = createAuthService({ userModel, jwtSecret });
   app.use('/api/auth', createAuthRoutes(createAuthController(authService), authService));
+  app.use(
+    '/api/users',
+    createUserRoutes(createUserController(createUserService(userModel)), authService),
+  );
 
   if (vendorModel) {
     const vendorController = createVendorController(createVendorService(vendorModel));

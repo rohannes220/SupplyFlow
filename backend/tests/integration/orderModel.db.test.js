@@ -25,7 +25,12 @@ describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
     adminPool = new pg.Pool({ connectionString: url });
     await adminPool.query(`CREATE SCHEMA "${schema}"`);
     pool = new pg.Pool({ connectionString: url, options: `-c search_path=${schema}` });
-    for (const migration of ['001_create_orders.sql', '003_create_vendors.sql']) {
+    for (const migration of [
+      '001_create_orders.sql',
+      '002_create_users.sql',
+      '003_create_vendors.sql',
+      '003_order_owner.sql',
+    ]) {
       await pool.query(
         await readFile(new URL(`../../db/migrations/${migration}`, import.meta.url), 'utf8'),
       );
@@ -56,13 +61,17 @@ describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
     expect(await model.findById(1)).toEqual(created);
     expect(await model.findAll()).toEqual([created]);
 
-    const updated = await model.update(1, { ...order, orderAmount: 5, customerState: 'TX' });
+    const updated = await model.update(
+      1,
+      { ...order, orderAmount: 5, customerState: 'TX' },
+      'Draft',
+    );
     expect(updated).toMatchObject({ orderAmount: 5, customerState: 'TX' });
 
-    expect(await model.remove(1)).toBe(true);
+    expect(await model.remove(1, 'Draft')).toBe(true);
     expect(await model.findById(1)).toBeNull();
-    expect(await model.remove(1)).toBe(false);
-    expect(await model.update(1, order)).toBeNull();
+    expect(await model.remove(1, 'Draft')).toBe(false);
+    expect(await model.update(1, order, 'Draft')).toBeNull();
   });
 
   it('enforces domestic-only constraints at the database level', async () => {

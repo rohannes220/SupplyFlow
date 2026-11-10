@@ -15,6 +15,7 @@ const order = (orderId, status) => ({
   customerState: 'TX',
   customerPhone: '5125550188',
   status,
+  createdBy: employeeUser.id,
 });
 
 const ALL_STATUSES = ['Draft', 'Pending', 'Approved', 'Shipped', 'Delivered', 'Cancelled'];
@@ -78,7 +79,7 @@ describe('OrdersPage delete rules', () => {
     const dialog = screen.getByRole('dialog', { name: /verification required/i });
     await user.click(within(dialog).getByRole('button', { name: /yes, delete order/i }));
 
-    expect(api.deleteOrder).toHaveBeenCalledWith(1);
+    expect(api.deleteOrder).toHaveBeenCalledWith(1, 'stored-token');
     expect(api.updateOrderStatus).not.toHaveBeenCalled();
   });
 
@@ -145,7 +146,7 @@ describe('OrdersPage status options', () => {
     await user.selectOptions(within(dialog).getByLabelText(/order status/i), 'Pending');
     await user.click(within(dialog).getByRole('button', { name: /update status/i }));
 
-    expect(api.updateOrderStatus).toHaveBeenCalledWith(1, 'Pending');
+    expect(api.updateOrderStatus).toHaveBeenCalledWith(1, 'Pending', 'stored-token');
     expect(await screen.findByText(/order #1 status updated to pending/i)).toBeInTheDocument();
   });
 

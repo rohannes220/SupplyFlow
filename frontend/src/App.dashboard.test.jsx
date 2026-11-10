@@ -69,6 +69,7 @@ describe('App dashboard routing', () => {
       'Dashboard',
       'Purchase Orders',
       'Vendors',
+      'Users',
     ]);
   });
 

@@ -52,10 +52,16 @@ function Field({ id, label, hint, error, required = true, children }) {
   );
 }
 
-export default function OrderForm({ onSubmit, onCancel }) {
+export default function OrderForm({ onSubmit, onCancel, initialOrder = null }) {
   const idPrefix = useId();
   const formRef = useRef(null);
-  const [form, setForm] = useState(EMPTY_ORDER_FORM);
+  const [form, setForm] = useState(() =>
+    initialOrder
+      ? Object.fromEntries(
+          Object.keys(EMPTY_ORDER_FORM).map((field) => [field, String(initialOrder[field] ?? '')]),
+        )
+      : EMPTY_ORDER_FORM,
+  );
   const [errors, setErrors] = useState({});
   const [attempted, setAttempted] = useState(false);
   const [serverError, setServerError] = useState('');
@@ -147,7 +153,7 @@ export default function OrderForm({ onSubmit, onCancel }) {
         >
           <input
             id={id('orderId')}
-            value="Assigned automatically"
+            value={initialOrder ? `#${initialOrder.orderId}` : 'Assigned automatically'}
             readOnly
             aria-describedby={`${id('orderId')}-hint`}
             className={`${inputClass(false)} cursor-not-allowed bg-slate-100 text-slate-500`}
@@ -271,7 +277,7 @@ export default function OrderForm({ onSubmit, onCancel }) {
           disabled={submitting}
           className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-60"
         >
-          {submitting ? 'Adding…' : 'Add Order'}
+          {submitting ? 'Saving…' : initialOrder ? 'Save changes' : 'Add Order'}
         </button>
       </div>
     </form>
