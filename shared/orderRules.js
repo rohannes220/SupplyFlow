@@ -139,3 +139,48 @@ export function validateOrder(body) {
     errors,
   };
 }
+
+// Status workflow (AGENTS.md Decisions). Shared so the API enforces it and the UI only offers
+// moves the API will accept.
+export const ORDER_STATUSES = Object.freeze([
+  'Draft',
+  'Pending',
+  'Approved',
+  'Shipped',
+  'Delivered',
+  'Cancelled',
+]);
+
+/** Only admins may move an order into these statuses. */
+export const ADMIN_ONLY_STATUSES = Object.freeze(['Approved', 'Shipped', 'Delivered']);
+
+/** No move is allowed out of these statuses. */
+export const FINAL_STATUSES = Object.freeze(['Delivered', 'Cancelled']);
+
+const TRANSITIONS = Object.freeze({
+  Draft: Object.freeze(['Pending', 'Cancelled']),
+  Pending: Object.freeze(['Approved', 'Cancelled']),
+  Approved: Object.freeze(['Shipped']),
+  Shipped: Object.freeze(['Delivered']),
+  Delivered: Object.freeze([]),
+  Cancelled: Object.freeze([]),
+});
+
+const ROLES = ['admin', 'employee'];
+
+/** True when the workflow allows moving an order from `from` to `to` (ignores roles). */
+export function canTransition(from, to) {
+  return Object.hasOwn(TRANSITIONS, from) && TRANSITIONS[from].includes(to);
+}
+
+/** True when `role` may move an order into status `to` (assuming the move itself is valid). */
+export function roleCanSetStatus(role, to) {
+  if (!ROLES.includes(role)) return false;
+  return role === 'admin' || !ADMIN_ONLY_STATUSES.includes(to);
+}
+
+/** The statuses `role` may move an order to from `from`, in workflow order. */
+export function allowedNextStatuses(from, role) {
+  if (!Object.hasOwn(TRANSITIONS, from)) return [];
+  return TRANSITIONS[from].filter((to) => roleCanSetStatus(role, to));
+}
