@@ -106,6 +106,35 @@ export function createOrderRoutes(controller) {
    */
   router.get('/:id', wrap(controller.get));
   router.put('/:id', wrap(controller.update));
+  /**
+   * @openapi
+   * /api/orders/{id}/status:
+   *   patch:
+   *     tags: [Orders]
+   *     summary: Move an order along the status workflow
+   *     description: >
+   *       Allowed moves are Draft→Pending, Pending→Approved, Approved→Shipped, Shipped→Delivered,
+   *       and Draft or Pending→Cancelled. Delivered and Cancelled are final. Approved, Shipped
+   *       and Delivered are admin-only. An invalid move is rejected (400) before the role is
+   *       checked (403).
+   *     security: [{ bearerAuth: [] }]
+   *     parameters: [{ $ref: '#/components/parameters/OrderId' }]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [status]
+   *             properties:
+   *               status: { type: string, enum: [Draft, Pending, Approved, Shipped, Delivered, Cancelled] }
+   *     responses:
+   *       200: { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
+   *       404: { $ref: '#/components/responses/NotFound' }
+   */
   router.patch('/:id/status', wrap(controller.updateStatus));
   router.delete('/:id', wrap(controller.remove));
 

@@ -1,7 +1,22 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import OrdersPage from './OrdersPage.jsx';
+import ProtectedRoute from '../components/ProtectedRoute.jsx';
+import { adminUser, renderWithAuth } from '../test/authTestUtils.jsx';
+
+// OrdersPage hides role-restricted controls, so it renders as in App: inside AuthProvider and
+// ProtectedRoute, which mounts the page only once the user is known. These tests use an admin
+// (who sees every control); role differences are in OrdersPage.roles.test.jsx.
+const renderPage = (api) =>
+  renderWithAuth(
+    <ProtectedRoute>
+      <OrdersPage api={api} />
+    </ProtectedRoute>,
+    { user: adminUser },
+  );
+
+beforeEach(() => localStorage.clear());
 
 const existing = {
   orderId: 1,
@@ -33,7 +48,7 @@ function fakeApi(orders = [existing]) {
 
 describe('OrdersPage', () => {
   it('lists orders with every field', async () => {
-    render(<OrdersPage api={fakeApi()} />);
+    renderPage(fakeApi());
     const row = (await screen.findByText('Mike Johnson')).closest('tr');
     const cells = within(row);
     expect(cells.getByText('#1')).toBeInTheDocument();
@@ -46,21 +61,21 @@ describe('OrdersPage', () => {
   });
 
   it('shows an empty state', async () => {
-    render(<OrdersPage api={fakeApi([])} />);
+    renderPage(fakeApi([]));
     expect(await screen.findByText(/no orders yet/i)).toBeInTheDocument();
   });
 
   it('shows a load error', async () => {
     const api = fakeApi();
     api.listOrders.mockRejectedValue(new Error('Could not reach the server'));
-    render(<OrdersPage api={api} />);
+    renderPage(api);
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not reach the server');
   });
 
   it('adds an order through the modal and shows it in the table', async () => {
     const user = userEvent.setup();
     const api = fakeApi();
-    render(<OrdersPage api={api} />);
+    renderPage(api);
     await screen.findByText('Mike Johnson');
 
     await user.click(screen.getByRole('button', { name: /add order/i }));
@@ -84,8 +99,8 @@ describe('OrdersPage', () => {
 
   it('closes the modal with Escape', async () => {
     const user = userEvent.setup();
-    render(<OrdersPage api={fakeApi()} />);
-    await user.click(screen.getByRole('button', { name: /add order/i }));
+    renderPage(fakeApi());
+    await user.click(await screen.findByRole('button', { name: /add order/i }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -94,26 +109,27 @@ describe('OrdersPage', () => {
   it('updates an order status via the update modal', async () => {
     const user = userEvent.setup();
     const api = fakeApi();
-    render(<OrdersPage api={api} />);
+    renderPage(api);
     await screen.findByText('Mike Johnson');
 
     await user.click(screen.getByRole('button', { name: /update/i }));
     const dialog = screen.getByRole('dialog', { name: /update order #1 status/i });
     expect(dialog).toBeInTheDocument();
 
+    // A Draft order can only be submitted (Pending) or cancelled; see AGENTS.md Decisions.
     const select = within(dialog).getByLabelText(/order status/i);
-    await user.selectOptions(select, 'Shipped');
+    await user.selectOptions(select, 'Pending');
     await user.click(within(dialog).getByRole('button', { name: /update status/i }));
 
-    expect(api.updateOrderStatus).toHaveBeenCalledWith(1, 'Shipped');
-    expect(await screen.findByText(/order #1 status updated to shipped/i)).toBeInTheDocument();
+    expect(api.updateOrderStatus).toHaveBeenCalledWith(1, 'Pending');
+    expect(await screen.findByText(/order #1 status updated to pending/i)).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('deletes an order after the verification process', async () => {
     const user = userEvent.setup();
     const api = fakeApi();
-    render(<OrdersPage api={api} />);
+    renderPage(api);
     await screen.findByText('Mike Johnson');
 
     await user.click(screen.getByRole('button', { name: /delete/i }));
@@ -133,7 +149,7 @@ describe('OrdersPage', () => {
       { ...existing, orderId: 1, orderAmount: 500, customerName: 'Low Amount' },
       { ...existing, orderId: 2, orderAmount: 5000, customerName: 'High Amount' },
     ];
-    render(<OrdersPage api={fakeApi(twoOrders)} />);
+    renderPage(fakeApi(twoOrders));
     await screen.findByText('Low Amount');
 
     // Click Group Orders ↑ (Lowest to Highest)

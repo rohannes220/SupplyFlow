@@ -18,7 +18,7 @@ export function createOrderController(orderService) {
     },
 
     async updateStatus(req, res) {
-      res.json(await orderService.updateOrderStatus(req.params.id, req.body?.status));
+      res.json(await orderService.updateOrderStatus(req.params.id, req.body?.status, req.user));
     },
 
     async remove(req, res) {

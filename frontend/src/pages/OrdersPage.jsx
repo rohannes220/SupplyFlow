@@ -3,6 +3,9 @@ import * as orderApi from '../services/orderApi.js';
 import Modal from '../components/Modal.jsx';
 import OrderForm from '../components/OrderForm.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
+import RoleGate from '../components/RoleGate.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import { ADMIN_ONLY_STATUSES, allowedNextStatuses } from '@supplyflow/shared/orderRules';
 import { formatCurrency, formatUsPhone } from '../utils/format.js';
 
 const COLUMNS = [
@@ -17,9 +20,13 @@ const COLUMNS = [
   'Actions',
 ];
 
-const VALID_STATUSES = ['Draft', 'Pending', 'Approved', 'Shipped', 'Delivered', 'Cancelled'];
+// Only Draft orders can be deleted (the API returns 409 otherwise).
+const DELETABLE_STATUS = 'Draft';
 
 export default function OrdersPage({ api = orderApi }) {
+  const { user } = useAuth();
+  const nextStatusesFor = (order) => allowedNextStatuses(order.status, user?.role);
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -65,16 +72,14 @@ export default function OrdersPage({ api = orderApi }) {
   // Handle Order Status Update
   function openUpdateModal(order) {
     setUpdatingOrder(order);
-    setSelectedStatus(order.status || 'Draft');
+    setSelectedStatus(nextStatusesFor(order)[0] ?? '');
   }
 
   async function handleStatusSubmit(e) {
     e.preventDefault();
     if (!updatingOrder) return;
     try {
-      if (typeof api.updateOrderStatus === 'function') {
-        await api.updateOrderStatus(updatingOrder.orderId, selectedStatus);
-      }
+      await api.updateOrderStatus(updatingOrder.orderId, selectedStatus);
       setOrders((current) =>
         current.map((o) =>
           o.orderId === updatingOrder.orderId ? { ...o, status: selectedStatus } : o,
@@ -96,19 +101,8 @@ export default function OrdersPage({ api = orderApi }) {
     if (!deletingOrder) return;
     setIsDeleting(true);
     try {
-      // If the backend enforces that only Draft orders can be deleted,
-      // we transition to Draft first if needed, then delete.
-      if (deletingOrder.status !== 'Draft' && typeof api.updateOrderStatus === 'function') {
-        try {
-          await api.updateOrderStatus(deletingOrder.orderId, 'Draft');
-        } catch {
-          // If status update is not available, proceed to attempt delete directly
-        }
-      }
-
-      if (typeof api.deleteOrder === 'function') {
-        await api.deleteOrder(deletingOrder.orderId);
-      }
+      // Never change the status to get around the Draft-only rule: the server decides.
+      await api.deleteOrder(deletingOrder.orderId);
 
       setOrders((current) => current.filter((o) => o.orderId !== deletingOrder.orderId));
       setNotice(`Order #${deletingOrder.orderId} was successfully deleted.`);
@@ -269,23 +263,27 @@ export default function OrdersPage({ api = orderApi }) {
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-right">
                   <div className="flex items-center gap-2">
-                    {/* Update Order Status Button */}
-                    <button
-                      type="button"
-                      onClick={() => openUpdateModal(order)}
-                      className="rounded bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    >
-                      Update
-                    </button>
+                    {/* Update: only when this user has a valid next status to offer */}
+                    {nextStatusesFor(order).length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openUpdateModal(order)}
+                        className="rounded bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      >
+                        Update
+                      </button>
+                    )}
 
-                    {/* Delete Order Button */}
-                    <button
-                      type="button"
-                      onClick={() => openDeleteModal(order)}
-                      className="rounded bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                    >
-                      Delete
-                    </button>
+                    {/* Delete: Draft orders only */}
+                    {order.status === DELETABLE_STATUS && (
+                      <button
+                        type="button"
+                        onClick={() => openDeleteModal(order)}
+                        className="rounded bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -345,11 +343,19 @@ export default function OrdersPage({ api = orderApi }) {
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
-                {VALID_STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
+                {/* Valid next statuses; admin-only ones are hidden from employees. The API
+                    enforces the same rules (400 for invalid moves, 403 for roles). */}
+                {allowedNextStatuses(updatingOrder.status, 'admin').map((status) =>
+                  ADMIN_ONLY_STATUSES.includes(status) ? (
+                    <RoleGate key={status} roles={['admin']}>
+                      <option value={status}>{status}</option>
+                    </RoleGate>
+                  ) : (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ),
+                )}
               </select>
             </div>
 
