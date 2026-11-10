@@ -75,16 +75,13 @@ describe.skipIf(!url)('userModel (PostgreSQL)', () => {
   });
 
   describe('seedDemoUsers', () => {
-    const passwords = { adminPassword: 'Seed#Admin1', employeePassword: 'Seed#Employee1' };
+    const passwords = { employeePassword: 'Seed#Employee1' };
 
-    it('creates the admin and employee demo accounts with bcrypt-hashed passwords', async () => {
+    it('creates only the demo employee with a bcrypt-hashed password', async () => {
       await seedDemoUsers(pool, passwords);
 
-      const seededAdmin = await model.findByEmail('admin@supplyflow.com');
       const seededEmployee = await model.findByEmail('employee@supplyflow.com');
-      expect(seededAdmin.role).toBe('admin');
       expect(seededEmployee.role).toBe('employee');
-      expect(await bcrypt.compare(passwords.adminPassword, seededAdmin.passwordHash)).toBe(true);
       expect(await bcrypt.compare(passwords.employeePassword, seededEmployee.passwordHash)).toBe(
         true,
       );
@@ -94,7 +91,7 @@ describe.skipIf(!url)('userModel (PostgreSQL)', () => {
       await seedDemoUsers(pool, passwords);
       await seedDemoUsers(pool, passwords);
       const { rows } = await pool.query('SELECT count(*)::int AS n FROM users');
-      expect(rows[0].n).toBe(2);
+      expect(rows[0].n).toBe(1);
     });
 
     it('refuses to seed without passwords', async () => {

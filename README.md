@@ -33,10 +33,12 @@ CS6983 - Generative AI, Northeastern University
 ## Running locally
 
 Requires Node 20+, pnpm and PostgreSQL 16 or newer.
+For a brand-new database, first follow the bootstrap steps under **Accounts and permissions**
+to create and verify the two designated accounts before running the complete migration.
 
 ```bash
 pnpm install
-cp backend/.env.example backend/.env   # then set DATABASE_URL and JWT_SECRET
+cp backend/.env.example backend/.env   # set DATABASE_URL, JWT_SECRET and admin emails
 set -a
 source backend/.env
 set +a
@@ -66,115 +68,33 @@ Draft → Pending → Approved → Shipped → Delivered, with cancellation from
 Pending; only administrators may approve, ship, or mark orders delivered. Missing or
 invalid authentication returns 401; authenticated users lacking permission receive 403.
 
-To grant administrator access, first have each person register, then independently verify
-that the account belongs to the intended person. An operator with local database access
-can promote an existing account (replace the placeholder with the verified email):
+Only two designated accounts may be administrators. Before applying migration 004 to a new
+database, create the users table and register or securely provision both accounts, independently
+verify their identities, and set `ADMIN_EMAIL_1` and `ADMIN_EMAIL_2` in the ignored `backend/.env`.
+The migration binds the existing account IDs to the policy; it refuses to proceed if either
+account is missing or another admin already exists. On a fresh database, apply migrations 001–003
+first to provision the accounts, then run `pnpm --filter supplyflow-backend migrate` for migration 004.
+For example, after exporting `DATABASE_URL`, apply the first three files using `psql`:
+
+```bash
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
+  -f backend/db/migrations/001_create_orders.sql \
+  -f backend/db/migrations/002_create_users.sql \
+  -f backend/db/migrations/003_order_owner.sql
+```
+
+Start the app, register both accounts as employees, verify ownership, and set both admin
+emails in `backend/.env`. Export the settings and run the complete migration command. The
+migration fixes which accounts may become admins; use `admin:grant` afterward to promote them.
+Public registration never grants admin access based on an email address.
+
+An operator can promote either designated account (replace the placeholder with its email):
 
 ```bash
 pnpm --filter supplyflow-backend admin:grant 'verified-email@example.com'
 ```
 
-Repeat for each administrator. Names alone do not prove identity and public registration
-does not verify email addresses. Never use an unverified account for this step. The script
-uses `backend/.env`; keep this ignored file and its database credentials private. The users
-list reflects the database; no employee list or passwords belong in source control.
-
-New orders must reference an existing Active vendor. Editing a draft to use a different
-vendor also requires that vendor to be Active; existing references are retained if a
-vendor is later deactivated. The order form displays a field error for an invalid vendor.
-
-## Deployment
-
-The frontend is served by **Vercel**. The API and a PostgreSQL 16 database run on **Render**. Vercel forwards every `/api/*` request to Render (see `frontend/vercel.json`), so the browser only ever talks to one origin and no CORS setup is needed.
-
-```
-browser ──> Vercel (React build) ──/api/*──> Render web service (Express) ──> Render PostgreSQL
-```
-
-The API builds from the **repository root**, not `backend/`, because it imports the `shared/` workspace package.
-
-### 1. Create the database and API on Render
-
-**Option A: Blueprint (uses `render.yaml`)**
-
-1. In Render, choose **New → Blueprint** and select this repository.
-2. Render reads `render.yaml` and proposes `supplyflow-db` (PostgreSQL 16) and `supplyflow-api` (Node web service).
-3. Enter values for `SEED_ADMIN_PASSWORD` and `SEED_EMPLOYEE_PASSWORD` when asked, then **Apply**.
-
-**Option B: by hand**
-
-1. **New → PostgreSQL**: PostgreSQL version 16. Note its **Internal Database URL**.
-2. **New → Web Service** from this repository, with these settings:
-
-| Setting           | Value                                                                                    |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| Root Directory    | _(leave empty: the repository root)_                                                     |
-| Runtime           | Node                                                                                     |
-| Build Command     | `npx --yes pnpm@12.18.0 install --frozen-lockfile --prod --filter supplyflow-backend...` |
-| Start Command     | `node backend/server.js`                                                                 |
-| Health Check Path | `/api/health`                                                                            |
-
-3. Set these environment variables on the web service:
-
-| Variable                 | Value                                                                 |
-| ------------------------ | --------------------------------------------------------------------- |
-| `NODE_ENV`               | `production`                                                          |
-| `NODE_VERSION`           | `20`                                                                  |
-| `DATABASE_URL`           | The database's **Internal Database URL**                              |
-| `JWT_SECRET`             | A long random value, e.g. from `openssl rand -hex 32`                 |
-| `SEED_ADMIN_PASSWORD`    | Password for `admin@supplyflow.com` (used only by the seed script)    |
-| `SEED_EMPLOYEE_PASSWORD` | Password for `employee@supplyflow.com` (used only by the seed script) |
-
-Render sets `PORT` itself and the server listens on it. With `NODE_ENV=production` the API **refuses to start** without a reachable `DATABASE_URL` or a `JWT_SECRET`; it never falls back to in-memory data.
-
-### 2. Create the tables and seed the production database
-
-Run these from your own machine, using the database's **External Database URL** (Render → the database → **Connections**).
-
-1. Create `backend/.env.production`. It's git-ignored, but never commit it:
-
-   ```
-   DATABASE_URL=<External Database URL>?sslmode=require
-   SEED_ADMIN_PASSWORD=<same value as on Render>
-   SEED_EMPLOYEE_PASSWORD=<same value as on Render>
-   ```
-
-2. From the `backend/` folder, create the tables, then load the demo data:
-
-   ```bash
-   node --env-file=.env.production db/migrate.js
-   node --env-file=.env.production db/seed.js
-   ```
-
-`migrate.js` applies every file in `backend/db/migrations/` in order. Each one uses `CREATE ... IF NOT EXISTS`, so you can re-run it after adding a migration. `seed.js` creates the two demo accounts, the 140 vendors from `data/vendors.csv` and the 140 sample orders. It's safe to re-run: existing vendors and orders are kept. The demo account passwords are reset to the `SEED_*` values each time.
-
-3. Check the API: open `https://<your-render-service>.onrender.com/api/health`. It should return `{"status":"ok"}`.
-
-### 3. Deploy the frontend on Vercel
-
-1. In `frontend/vercel.json`, replace `RENDER_URL_PLACEHOLDER` with your Render host, e.g. `supplyflow-api.onrender.com` (no `https://`, no trailing slash). Commit and push.
-2. In Vercel, **Add New → Project**, import this repository, and use these settings:
-
-| Setting                                  | Value                                              |
-| ---------------------------------------- | -------------------------------------------------- |
-| Root Directory                           | `frontend`                                         |
-| Framework Preset                         | Vite                                               |
-| Install Command                          | `npx --yes pnpm@12.18.0 install --frozen-lockfile` |
-| Build Command                            | `npm run build`                                    |
-| Output Directory                         | `dist`                                             |
-| Node.js Version                          | 20.x                                               |
-| Include files outside the Root Directory | Enabled (the build imports `shared/`)              |
-
-No environment variables are needed on Vercel. The `/api` rewrite in `vercel.json` sends API calls to Render. The second rewrite serves `index.html` for app routes such as `/vendors`, so reloading those pages works.
-
-### 4. Smoke test
-
-1. Open the Vercel URL. You should see the login page.
-2. Log in as `admin@supplyflow.com` with `SEED_ADMIN_PASSWORD`. The Dashboard should show 140 orders.
-3. Open **Vendors** and **Purchase Orders**, and reload one of them to check the SPA fallback.
-
-### Notes
-
-- **Free Render services sleep when idle.** The first request after a pause can take up to a minute while the API wakes; if a page shows a network error, wait a moment and reload. Free Render databases also expire after a limited time, so check Render's current free-tier terms before a demo.
-- **Changing `JWT_SECRET` logs everyone out.**
-- **Database URLs:** the Render web service should use the **Internal** URL; your machine uses the **External** URL with `?sslmode=require`.
+Other accounts cannot be promoted by this script or a normal SQL role update. The database owner
+can alter or bypass database rules, so database credentials must remain private. Names alone do not
+prove identity and public registration does not verify email addresses. The demo seed creates
+only an employee; it never creates an additional administrator.

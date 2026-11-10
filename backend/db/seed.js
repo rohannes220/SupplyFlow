@@ -7,15 +7,10 @@ import { DEMO_ORDERS, seedDemoOrders } from './seeds/demoOrders.js';
 
 try {
   await seedDemoUsers(pool, {
-    adminPassword: process.env.SEED_ADMIN_PASSWORD,
     employeePassword: process.env.SEED_EMPLOYEE_PASSWORD,
   });
-  console.log('Seeded demo users: admin@supplyflow.com, employee@supplyflow.com');
-
-  const vendorsInserted = await seedDemoVendors(pool);
-  console.log(`Seeded demo vendors from data/vendors.csv: ${vendorsInserted} new.`);
-
-  const ordersInserted = await seedDemoOrders(pool);
+  const inserted = await seedDemoOrders(pool);
+  console.log('Seeded demo user: employee@supplyflow.com');
   console.log(
     `Seeded demo orders: ${ordersInserted} new, ${DEMO_ORDERS.length - ordersInserted} already present.`,
   );
