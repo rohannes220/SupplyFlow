@@ -26,22 +26,27 @@ describe('Layout', () => {
     expect(within(account).getByText(role)).toBeInTheDocument();
   });
 
-  it('has Purchase Orders and Vendors links in the sidebar', async () => {
+  it('has Dashboard (first), Purchase Orders and Vendors links in the sidebar', async () => {
     renderLayout(employeeUser);
     const nav = within(await screen.findByRole('navigation', { name: /main/i }));
+    const links = nav.getAllByRole('link');
+    expect(links.map((a) => a.textContent)).toEqual(['Dashboard', 'Purchase Orders', 'Vendors']);
+    expect(nav.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/');
     expect(nav.getByRole('link', { name: 'Purchase Orders' })).toHaveAttribute('href', '/orders');
     expect(nav.getByRole('link', { name: 'Vendors' })).toHaveAttribute('href', '/vendors');
   });
 
   it.each([
-    ['/vendors', 'Vendors', 'Purchase Orders'],
-    ['/orders', 'Purchase Orders', 'Vendors'],
-    ['/', 'Purchase Orders', 'Vendors'],
-  ])('marks the current section on %s', async (route, current, other) => {
+    ['/', 'Dashboard'],
+    ['/orders', 'Purchase Orders'],
+    ['/vendors', 'Vendors'],
+  ])('marks only the current section on %s', async (route, current) => {
     renderLayout(employeeUser, route);
     const nav = within(await screen.findByRole('navigation', { name: /main/i }));
-    expect(nav.getByRole('link', { name: current })).toHaveAttribute('aria-current', 'page');
-    expect(nav.getByRole('link', { name: other })).not.toHaveAttribute('aria-current');
+    for (const link of nav.getAllByRole('link')) {
+      if (link.textContent === current) expect(link).toHaveAttribute('aria-current', 'page');
+      else expect(link).not.toHaveAttribute('aria-current');
+    }
   });
 
   it('renders the page content', async () => {

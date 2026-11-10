@@ -2,11 +2,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const NAV_ITEMS = [
-  {
-    to: '/orders',
-    label: 'Purchase Orders',
-    isActive: (path) => path === '/' || path.startsWith('/orders'),
-  },
+  { to: '/', label: 'Dashboard', isActive: (path) => path === '/' },
+  { to: '/orders', label: 'Purchase Orders', isActive: (path) => path.startsWith('/orders') },
   { to: '/vendors', label: 'Vendors', isActive: (path) => path.startsWith('/vendors') },
 ];
 
