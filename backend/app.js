@@ -8,15 +8,25 @@ import { createAuthRoutes } from './routes/authRoutes.js';
 import { createVendorService } from './services/vendorService.js';
 import { createVendorController } from './controllers/vendorController.js';
 import { createVendorRoutes } from './routes/vendorRoutes.js';
+import { createDashboardService } from './services/dashboardService.js';
+import { createDashboardController } from './controllers/dashboardController.js';
+import { createDashboardRoutes } from './routes/dashboardRoutes.js';
 import { requireAuth } from './middleware/auth.js';
 import { createErrorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 /**
  * Builds the Express app. Dependencies are injected so tests can avoid PostgreSQL.
  * userModel and jwtSecret are required: /api/orders must never be served without login.
- * /api/vendors is mounted when a vendorModel is given; its routes require login too.
+ * /api/vendors and /api/dashboard are mounted when their models are given; they require login too.
  */
-export function createApp({ orderModel, userModel, vendorModel, jwtSecret, logger = console }) {
+export function createApp({
+  orderModel,
+  userModel,
+  vendorModel,
+  dashboardModel,
+  jwtSecret,
+  logger = console,
+}) {
   if (!userModel || !jwtSecret) {
     throw new Error('createApp requires userModel and jwtSecret: /api/orders needs authentication');
   }
@@ -31,6 +41,13 @@ export function createApp({ orderModel, userModel, vendorModel, jwtSecret, logge
   if (vendorModel) {
     const vendorController = createVendorController(createVendorService(vendorModel));
     app.use('/api/vendors', createVendorRoutes(vendorController, authService));
+  }
+
+  if (dashboardModel) {
+    const dashboardController = createDashboardController(
+      createDashboardService({ dashboardModel }),
+    );
+    app.use('/api/dashboard', createDashboardRoutes(dashboardController, authService));
   }
 
   // Every order route requires login; per-status role rules live in orderService.

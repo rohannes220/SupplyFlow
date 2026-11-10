@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { createInMemoryOrderModel } from './tests/helpers/inMemoryOrderModel.js';
 import { createInMemoryUserModel } from './tests/helpers/inMemoryUserModel.js';
 import { createInMemoryVendorModel } from './tests/helpers/inMemoryVendorModel.js';
+import { createInMemoryDashboardModel } from './tests/helpers/inMemoryDashboardModel.js';
 import { DEMO_ORDERS } from './db/seeds/demoOrders.js';
 import { loadDemoVendors } from './db/seeds/demoVendors.js';
 
@@ -11,11 +12,13 @@ async function connectPostgres() {
   const { createOrderModel } = await import('./models/orderModel.js');
   const { createUserModel } = await import('./models/userModel.js');
   const { createVendorModel } = await import('./models/vendorModel.js');
+  const { createDashboardModel } = await import('./models/dashboardModel.js');
   await pool.query('SELECT 1');
   return {
     orderModel: createOrderModel(pool),
     userModel: createUserModel(pool),
     vendorModel: createVendorModel(pool),
+    dashboardModel: createDashboardModel(pool),
   };
 }
 
@@ -56,10 +59,14 @@ export async function resolveDependencies(
     logger.warn(
       'In-memory mode: 140 sample orders and vendors, no users until you register; nothing persists.',
     );
+    const orderModel = createInMemoryOrderModel(DEMO_ORDERS);
+    const vendorModel = createDemoVendorModel();
     models = {
-      orderModel: createInMemoryOrderModel(DEMO_ORDERS),
+      orderModel,
       userModel: createInMemoryUserModel([]),
-      vendorModel: createDemoVendorModel(),
+      vendorModel,
+      // Reads the same in-memory orders and vendors, so it reflects changes made in the app.
+      dashboardModel: createInMemoryDashboardModel({ orderModel, vendorModel }),
     };
   }
 
