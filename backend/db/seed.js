@@ -5,11 +5,10 @@ import { DEMO_ORDERS, seedDemoOrders } from './seeds/demoOrders.js';
 
 try {
   await seedDemoUsers(pool, {
-    adminPassword: process.env.SEED_ADMIN_PASSWORD,
     employeePassword: process.env.SEED_EMPLOYEE_PASSWORD,
   });
   const inserted = await seedDemoOrders(pool);
-  console.log('Seeded demo users: admin@supplyflow.com, employee@supplyflow.com');
+  console.log('Seeded demo user: employee@supplyflow.com');
   console.log(
     `Seeded demo orders: ${inserted} new, ${DEMO_ORDERS.length - inserted} already present.`,
   );

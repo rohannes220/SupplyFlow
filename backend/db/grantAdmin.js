@@ -10,11 +10,15 @@ if (!email || process.argv.length !== 3) {
 } else {
   try {
     const result = await pool.query(
-      "UPDATE users SET role = 'admin', updated_at = now() WHERE email = $1 RETURNING id, name, email",
+      `UPDATE users SET role = 'admin', updated_at = now()
+       WHERE email = $1 AND EXISTS (
+         SELECT 1 FROM admin_identities WHERE user_id = users.id AND email = users.email
+       )
+       RETURNING id, name, email`,
       [email],
     );
     if (result.rowCount !== 1) {
-      console.error('No user found with that email. Register and verify the account first.');
+      console.error('Account not found or not one of the two designated administrators.');
       process.exitCode = 1;
     } else {
       console.log(

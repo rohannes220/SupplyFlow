@@ -4,12 +4,6 @@ const BCRYPT_COST = 12;
 
 const DEMO_ACCOUNTS = [
   {
-    name: 'Demo Admin',
-    email: 'admin@supplyflow.com',
-    role: 'admin',
-    passwordKey: 'adminPassword',
-  },
-  {
     name: 'Demo Employee',
     email: 'employee@supplyflow.com',
     role: 'employee',
@@ -18,7 +12,7 @@ const DEMO_ACCOUNTS = [
 ];
 
 /**
- * Creates the demo admin and employee accounts. Safe to re-run: an existing demo account's
+ * Creates the demo employee account. Safe to re-run: an existing demo account's
  * name, role and password are reset to the seeded values.
  */
 export async function seedDemoUsers(db, passwords) {

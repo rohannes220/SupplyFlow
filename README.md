@@ -27,10 +27,12 @@ CS6983 - Generative AI, Northeastern University
 
 ## Running locally
 Requires Node 20+, pnpm and PostgreSQL 16 or newer.
+For a brand-new database, first follow the bootstrap steps under **Accounts and permissions**
+to create and verify the two designated accounts before running the complete migration.
 
 ```bash
 pnpm install
-cp backend/.env.example backend/.env   # then set DATABASE_URL and JWT_SECRET
+cp backend/.env.example backend/.env   # set DATABASE_URL, JWT_SECRET and admin emails
 set -a
 source backend/.env
 set +a
@@ -59,15 +61,33 @@ Draft → Pending → Approved → Shipped → Delivered, with cancellation from
 Pending; only administrators may approve, ship, or mark orders delivered. Missing or
 invalid authentication returns 401; authenticated users lacking permission receive 403.
 
-To grant administrator access, first have each person register, then independently verify
-that the account belongs to the intended person. An operator with local database access
-can promote an existing account (replace the placeholder with the verified email):
+Only two designated accounts may be administrators. Before applying migration 004 to a new
+database, create the users table and register or securely provision both accounts, independently
+verify their identities, and set `ADMIN_EMAIL_1` and `ADMIN_EMAIL_2` in the ignored `backend/.env`.
+The migration binds the existing account IDs to the policy; it refuses to proceed if either
+account is missing or another admin already exists. On a fresh database, apply migrations 001–003
+first to provision the accounts, then run `pnpm --filter supplyflow-backend migrate` for migration 004.
+For example, after exporting `DATABASE_URL`, apply the first three files using `psql`:
+
+```bash
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
+  -f backend/db/migrations/001_create_orders.sql \
+  -f backend/db/migrations/002_create_users.sql \
+  -f backend/db/migrations/003_order_owner.sql
+```
+
+Start the app, register both accounts as employees, verify ownership, and set both admin
+emails in `backend/.env`. Export the settings and run the complete migration command. The
+migration fixes which accounts may become admins; use `admin:grant` afterward to promote them.
+Public registration never grants admin access based on an email address.
+
+An operator can promote either designated account (replace the placeholder with its email):
 
 ```bash
 pnpm --filter supplyflow-backend admin:grant 'verified-email@example.com'
 ```
 
-Repeat for each administrator. Names alone do not prove identity and public registration
-does not verify email addresses. Never use an unverified account for this step. The script
-uses `backend/.env`; keep this ignored file and its database credentials private. The users
-list reflects the database; no employee list or passwords belong in source control.
+Other accounts cannot be promoted by this script or a normal SQL role update. The database owner
+can alter or bypass database rules, so database credentials must remain private. Names alone do not
+prove identity and public registration does not verify email addresses. The demo seed creates
+only an employee; it never creates an additional administrator.

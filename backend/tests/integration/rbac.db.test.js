@@ -52,6 +52,16 @@ describe.skipIf(!url)('RBAC with PostgreSQL', () => {
     });
     expect(registration.status).toBe(201);
     const { token, user } = registration.body;
+    await pool.query(
+      "INSERT INTO users (name, email, password_hash, role) VALUES ('Second', 'second@example.com', 'hash', 'employee')",
+    );
+    await pool.query(
+      "SELECT set_config('supplyflow.admin_email_1', $1, false), set_config('supplyflow.admin_email_2', $2, false)",
+      [user.email, 'second@example.com'],
+    );
+    await pool.query(
+      await readFile(new URL('../../db/migrations/004_fixed_admins.sql', import.meta.url), 'utf8'),
+    );
     const created = await request(app)
       .post('/api/orders')
       .auth(token, { type: 'bearer' })
@@ -66,6 +76,8 @@ describe.skipIf(!url)('RBAC with PostgreSQL', () => {
     );
     const list = await request(app).get('/api/users').auth(token, { type: 'bearer' });
     expect(list.status).toBe(200);
-    expect(list.body).toEqual([{ id: user.id, name: user.name, email: user.email, role: 'admin' }]);
+    expect(list.body).toEqual(
+      expect.arrayContaining([{ id: user.id, name: user.name, email: user.email, role: 'admin' }]),
+    );
   });
 });
