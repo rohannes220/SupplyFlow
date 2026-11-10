@@ -1,15 +1,28 @@
 import { randomBytes } from 'node:crypto';
 import { createInMemoryOrderModel } from './tests/helpers/inMemoryOrderModel.js';
 import { createInMemoryUserModel } from './tests/helpers/inMemoryUserModel.js';
+import { createInMemoryVendorModel } from './tests/helpers/inMemoryVendorModel.js';
 import { DEMO_ORDERS } from './db/seeds/demoOrders.js';
+import { loadDemoVendors } from './db/seeds/demoVendors.js';
 
 /** Connects to PostgreSQL and returns the database-backed models. Throws if unreachable. */
 async function connectPostgres() {
   const { pool } = await import('./db/pool.js');
   const { createOrderModel } = await import('./models/orderModel.js');
   const { createUserModel } = await import('./models/userModel.js');
+  const { createVendorModel } = await import('./models/vendorModel.js');
   await pool.query('SELECT 1');
-  return { orderModel: createOrderModel(pool), userModel: createUserModel(pool) };
+  return {
+    orderModel: createOrderModel(pool),
+    userModel: createUserModel(pool),
+    vendorModel: createVendorModel(pool),
+  };
+}
+
+/** In-memory vendors from data/vendors.csv, with the same IDs the sample orders reference. */
+function createDemoVendorModel() {
+  const createdAt = new Date().toISOString();
+  return createInMemoryVendorModel(loadDemoVendors().map((v) => ({ ...v, createdAt })));
 }
 
 /**
@@ -41,11 +54,12 @@ export async function resolveDependencies(
 
   if (!models) {
     logger.warn(
-      'In-memory mode: 140 sample orders, no users until you register; nothing persists.',
+      'In-memory mode: 140 sample orders and vendors, no users until you register; nothing persists.',
     );
     models = {
       orderModel: createInMemoryOrderModel(DEMO_ORDERS),
       userModel: createInMemoryUserModel([]),
+      vendorModel: createDemoVendorModel(),
     };
   }
 

@@ -48,6 +48,26 @@ describe('resolveDependencies', () => {
       expect(await deps.userModel.findByEmail('admin@supplyflow.com')).toBeNull();
     });
 
+    it('loads the in-memory vendors from data/vendors.csv with their IDs', async () => {
+      const { vendorModel, orderModel } = await resolveDependencies({}, { logger: quiet });
+
+      const vendors = await vendorModel.findAll();
+      expect(vendors).toHaveLength(140);
+      expect(await vendorModel.findById(1)).toMatchObject({
+        id: 1,
+        name: 'Highland Plumbing Services',
+        phone: '7815559024',
+        state: 'MA',
+        status: 'Active',
+        createdAt: expect.any(String),
+      });
+      expect(await vendorModel.findAll({ status: 'Inactive' })).toHaveLength(10);
+      // Every sample order points at a vendor that exists.
+      for (const order of await orderModel.findAll()) {
+        expect(await vendorModel.findById(order.vendorId)).not.toBeNull();
+      }
+    });
+
     it('generates a different secret each start', async () => {
       const a = await resolveDependencies({}, { logger: quiet });
       const b = await resolveDependencies({}, { logger: quiet });
