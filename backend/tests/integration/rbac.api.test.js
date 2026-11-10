@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../app.js';
 import { createInMemoryOrderModel, validOrderBody } from '../helpers/inMemoryOrderModel.js';
+import { createInMemoryVendorModel, vendorRow } from '../helpers/inMemoryVendorModel.js';
 import {
   createInMemoryUserModel,
   demoUsers,
@@ -17,6 +18,7 @@ describe('role-based access', () => {
   beforeEach(async () => {
     app = createApp({
       orderModel: createInMemoryOrderModel(),
+      vendorModel: createInMemoryVendorModel([vendorRow({ id: 3 })]),
       userModel: createInMemoryUserModel(),
       jwtSecret: TEST_JWT_SECRET,
     });
@@ -62,7 +64,7 @@ describe('role-based access', () => {
           status: 'Approved',
         })
       ).status,
-    ).toBe(403);
+    ).toBe(400);
     expect(
       (
         await request(app).patch(`${path}/status`).auth(employee, { type: 'bearer' }).send({

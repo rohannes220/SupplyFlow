@@ -1,0 +1,35 @@
+# Render Blueprint: the SupplyFlow API (Node web service) and its PostgreSQL 16 database.
+# The service builds from the repository root because the backend imports shared/ (the
+# @supplyflow/shared workspace package). Only the backend and its workspace dependencies are
+# installed. See README.md, "Deployment".
+services:
+  - type: web
+    name: supplyflow-api
+    runtime: node
+    plan: free
+    # Install only supplyflow-backend's runtime dependencies and the workspace packages it uses
+    # (shared/). pnpm runs via npx so its version matches local development and the lockfile.
+    buildCommand: npx --yes pnpm@12.18.0 install --frozen-lockfile --prod --filter supplyflow-backend...
+    startCommand: node backend/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '20'
+      - key: DATABASE_URL
+        fromDatabase:
+          name: supplyflow-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      # Only used by the seed script (see README). Render asks for these values on first deploy.
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: SEED_EMPLOYEE_PASSWORD
+        sync: false
+
+databases:
+  - name: supplyflow-db
+    plan: free
+    postgresMajorVersion: '16'

@@ -1,0 +1,77 @@
+# Lint and test every pull request and every push to master.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+# Read-only token: CI only needs to check out code.
+permissions:
+  contents: read
+
+# A newer push to the same branch or PR cancels the run it replaces.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Throwaway PostgreSQL 16 for the *.db.test.js model tests. Each of those tests creates
+    # its own tables from backend/db/migrations, so no separate migrate step is needed.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: supplyflow
+          POSTGRES_PASSWORD: supplyflow-ci # CI-only container, discarded after the job
+          POSTGRES_DB: supplyflow_test
+        ports:
+          - 5432:5432
+        # Wait until the database accepts connections before the steps start.
+        options: >-
+          --health-cmd "pg_isready -U supplyflow -d supplyflow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Enables the PostgreSQL model tests (they are skipped when this is unset).
+      TEST_DATABASE_URL: postgres://supplyflow:supplyflow-ci@localhost:5432/supplyflow_test
+      # Dummy value for code that reads JWT_SECRET; tests sign tokens with their own secret.
+      JWT_SECRET: ci-dummy-jwt-secret-not-used-outside-ci
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Same pnpm as local development, so the lockfile format and allowBuilds behave the same.
+      # (Pinned here rather than via package.json "packageManager", which pnpm 12 also records
+      # in pnpm-lock.yaml.)
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.18.0
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      # Fails if pnpm-lock.yaml is out of date with package.json, instead of silently
+      # updating it. esbuild's install script is allowed via allowBuilds in pnpm-workspace.yaml.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      # Runs Vitest in every workspace package: backend (unit, Supertest, PostgreSQL) and
+      # frontend (React Testing Library).
+      - name: Test
+        run: pnpm test

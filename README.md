@@ -3,9 +3,11 @@
 SupplyFlow is a full-stack supply chain management application designed to help small businesses manage inventory, suppliers, and purchase orders.
 
 # Authors
-Rohan Kumar and Patrick Tarumbwa 
+
+Rohan Kumar and Patrick Tarumbwa
 
 ## Core Features
+
 - Inventory management
 - Supplier management
 - Purchase order tracking
@@ -13,19 +15,23 @@ Rohan Kumar and Patrick Tarumbwa
 - User authentication
 
 ## Documentation
+
 - [Product Requirements Document](docs/PRD.md)
 - [UI Mockups](docs/supplyflow-mockups.png)
 - [AI Development Instructions](AGENTS.md)
 
 ## Workspace Layout
+
 This project uses pnpm workspaces: `frontend/` contains the React application, `backend/` contains the Express API, and `shared/` contains shared utilities. Project documentation is in `docs/`.
 
 Run pnpm commands from the repository root; use workspace filters for package-specific scripts.
 
 ## Course
+
 CS6983 - Generative AI, Northeastern University
 
 ## Running locally
+
 Requires Node 20+, pnpm and PostgreSQL 16 or newer.
 For a brand-new database, first follow the bootstrap steps under **Accounts and permissions**
 to create and verify the two designated accounts before running the complete migration.
@@ -51,7 +57,8 @@ Users can register at `/register` and sign in at `/login`. Registration always c
 an employee, never an administrator. Passwords are stored as bcrypt hashes. PostgreSQL
 stores accounts and orders persistently. Without `DATABASE_URL`, the development server
 uses temporary in-memory data that disappears when it restarts. If a configured database
-is unavailable, the server fails instead of silently switching to temporary storage.
+is unavailable, production startup fails; development logs a warning before using temporary
+in-memory data.
 
 Administrators can view the current account list at `/users` and approve pending orders.
 Employees can submit or cancel their own eligible orders and edit or delete their own

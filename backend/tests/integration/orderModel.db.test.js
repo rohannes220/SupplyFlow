@@ -2,8 +2,8 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import pg from 'pg';
 import { readFile } from 'node:fs/promises';
-import { createOrderModel } from '../../models/orderModel.js';
 import { randomBytes } from 'node:crypto';
+import { createOrderModel } from '../../models/orderModel.js';
 
 const url = process.env.TEST_DATABASE_URL;
 
@@ -28,12 +28,16 @@ describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
     for (const migration of [
       '001_create_orders.sql',
       '002_create_users.sql',
+      '003_create_vendors.sql',
       '003_order_owner.sql',
     ]) {
       await pool.query(
         await readFile(new URL(`../../db/migrations/${migration}`, import.meta.url), 'utf8'),
       );
     }
+    await pool.query(
+      "INSERT INTO vendors (id, name, email, phone, city, state, status) VALUES (3, 'Vendor', 'vendor@example.com', '5551234567', 'Atlanta', 'GA', 'Active')",
+    );
     model = createOrderModel(pool);
   });
 
