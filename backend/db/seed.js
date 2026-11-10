@@ -1,19 +1,27 @@
-// Run with `pnpm seed`, which loads backend/.env. Requires the migrations to have run.
+// Run with `pnpm seed` or `npm run seed`. Loads backend/.env if present.
+// Order: users, then vendors (orders reference vendor IDs 1-140), then orders.
 import { pool } from './pool.js';
 import { seedDemoUsers } from './seeds/demoUsers.js';
-import { DEMO_VENDORS, seedDemoVendors } from './seeds/demoVendors.js';
+import { seedDemoVendors } from './seeds/demoVendors.js';
+import { DEMO_ORDERS, seedDemoOrders } from './seeds/demoOrders.js';
 
 try {
   await seedDemoUsers(pool, {
     adminPassword: process.env.SEED_ADMIN_PASSWORD,
     employeePassword: process.env.SEED_EMPLOYEE_PASSWORD,
   });
-  console.log('seeded demo users: admin@supplyflow.com, employee@supplyflow.com');
+  console.log('Seeded demo users: admin@supplyflow.com, employee@supplyflow.com');
 
-  const inserted = await seedDemoVendors(pool);
+  const vendorsInserted = await seedDemoVendors(pool);
+  console.log(`Seeded demo vendors from data/vendors.csv: ${vendorsInserted} new.`);
+
+  const ordersInserted = await seedDemoOrders(pool);
   console.log(
-    `seeded demo vendors: ${inserted} new, ${DEMO_VENDORS.length - inserted} already present`,
+    `Seeded demo orders: ${ordersInserted} new, ${DEMO_ORDERS.length - ordersInserted} already present.`,
   );
+} catch (err) {
+  console.error('Error during database seed:', err);
+  process.exitCode = 1;
 } finally {
   await pool.end();
 }

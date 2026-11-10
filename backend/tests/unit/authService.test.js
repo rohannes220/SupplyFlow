@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import jwt from 'jsonwebtoken';
 import { createAuthService } from '../../services/authService.js';
-import { UnauthorizedError, ValidationError } from '../../utils/errors.js';
+import { ConflictError, UnauthorizedError, ValidationError } from '../../utils/errors.js';
 import {
   createInMemoryUserModel,
   demoUsers,
@@ -86,6 +86,41 @@ describe('authService', () => {
 
     it('treats a missing body as missing fields', async () => {
       await expect(service.login(undefined)).rejects.toThrow(ValidationError);
+    });
+  });
+
+  describe('register', () => {
+    const valid = { name: ' New Person ', email: ' New@SupplyFlow.com ', password: 'Str0ng#Pass' };
+
+    it('creates an employee with a hashed password and trimmed, lowercased email', async () => {
+      const userModel = createInMemoryUserModel();
+      service = createAuthService({ userModel, jwtSecret: TEST_JWT_SECRET, bcryptRounds: 4 });
+
+      const { token, user } = await service.register({ ...valid, role: 'admin' });
+
+      expect(user).toEqual({
+        id: expect.any(Number),
+        name: 'New Person',
+        email: 'new@supplyflow.com',
+        role: 'employee',
+      });
+      expect(token).toEqual(expect.any(String));
+      const stored = await userModel.findByEmail('new@supplyflow.com');
+      expect(stored.passwordHash).not.toBe(valid.password);
+      expect(stored.passwordHash).toMatch(/^\$2[aby]\$/);
+    });
+
+    it('rejects a duplicate email with ConflictError', async () => {
+      await expect(service.register({ ...valid, email: admin.email })).rejects.toBeInstanceOf(
+        ConflictError,
+      );
+    });
+
+    it('rejects invalid input with ValidationError', async () => {
+      await expect(service.register({ ...valid, password: 'short' })).rejects.toBeInstanceOf(
+        ValidationError,
+      );
+      await expect(service.register(undefined)).rejects.toBeInstanceOf(ValidationError);
     });
   });
 

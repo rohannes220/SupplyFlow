@@ -23,6 +23,12 @@ export function createInMemoryOrderModel(seed = []) {
       rows[index] = { ...rows[index], ...order, updatedAt: new Date().toISOString() };
       return { ...rows[index] };
     },
+    async updateStatus(orderId, status) {
+      const index = rows.findIndex((r) => r.orderId === orderId);
+      if (index === -1) return null;
+      rows[index] = { ...rows[index], status, updatedAt: new Date().toISOString() };
+      return { ...rows[index] };
+    },
     async remove(orderId) {
       const before = rows.length;
       rows = rows.filter((r) => r.orderId !== orderId);

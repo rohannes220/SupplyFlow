@@ -1,5 +1,6 @@
 // Test double that mirrors the interface of models/userModel.js without PostgreSQL.
 import bcrypt from 'bcryptjs';
+import { ConflictError } from '../../utils/errors.js';
 
 export const TEST_JWT_SECRET = 'test-only-jwt-secret-not-used-anywhere-else';
 
@@ -37,6 +38,18 @@ export function createInMemoryUserModel(seed = Object.values(demoUsers)) {
     async findById(id) {
       const row = rows.find((r) => r.id === id);
       return row ? { ...row } : null;
+    },
+    async create({ name, email, passwordHash, role }) {
+      if (rows.some((r) => r.email === email)) throw new ConflictError('Email already exists');
+      const row = {
+        id: Math.max(0, ...rows.map((r) => r.id)) + 1,
+        name,
+        email,
+        passwordHash,
+        role,
+      };
+      rows.push(row);
+      return { ...row };
     },
   };
 }

@@ -21,6 +21,7 @@ export const employeeUser = Object.freeze({
 export function fakeAuthApi(user = adminUser) {
   return {
     login: vi.fn().mockResolvedValue({ token: 'new-token', user }),
+    register: vi.fn().mockResolvedValue({ token: 'new-token', user }),
     getMe: vi.fn().mockImplementation(async () => {
       if (!user) throw Object.assign(new Error('Invalid or expired token'), { status: 401 });
       return user;

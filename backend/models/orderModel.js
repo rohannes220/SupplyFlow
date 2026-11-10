@@ -65,6 +65,17 @@ export function createOrderModel(db) {
       return rows[0] ? toOrder(rows[0]) : null;
     },
 
+    async updateStatus(orderId, status) {
+      const { rows } = await db.query(
+        `UPDATE orders
+            SET status = $1, updated_at = now()
+          WHERE order_id = $2
+         RETURNING ${COLUMNS}`,
+        [status, orderId],
+      );
+      return rows[0] ? toOrder(rows[0]) : null;
+    },
+
     async remove(orderId) {
       const { rowCount } = await db.query('DELETE FROM orders WHERE order_id = $1', [orderId]);
       return rowCount > 0;

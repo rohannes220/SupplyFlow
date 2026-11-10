@@ -13,6 +13,7 @@ function renderLogin(api = fakeAuthApi(adminUser)) {
     routes: (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<p>Register screen</p>} />
         <Route path="/" element={<p>Dashboard home</p>} />
       </Routes>
     ),
@@ -101,5 +102,12 @@ describe('LoginPage', () => {
     expect(await screen.findByText('Dashboard home')).toBeInTheDocument();
     expect(api.login).toHaveBeenCalledWith('admin@supplyflow.com', 'secret');
     expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('new-token');
+  });
+
+  it('links to the registration page', async () => {
+    const user = userEvent.setup();
+    renderLogin();
+    await user.click(screen.getByRole('link', { name: /create an account/i }));
+    expect(await screen.findByText('Register screen')).toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const inputClass = (invalid) =>
@@ -130,6 +130,13 @@ export default function LoginPage() {
               {submitting ? 'Logging in…' : 'Log in'}
             </button>
           </form>
+
+          <p className="mt-6 text-center text-sm text-slate-500">
+            New to SupplyFlow?{' '}
+            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-700">
+              Create an account
+            </Link>
+          </p>
         </div>
       </div>
     </main>

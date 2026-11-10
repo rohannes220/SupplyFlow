@@ -14,6 +14,13 @@ import { requireAuth } from '../middleware/auth.js';
  *       properties:
  *         email: { type: string, format: email, example: admin@supplyflow.com }
  *         password: { type: string, format: password }
+ *     RegisterInput:
+ *       type: object
+ *       required: [name, email, password]
+ *       properties:
+ *         name: { type: string, example: Sam Smith }
+ *         email: { type: string, format: email, example: sam@example.com }
+ *         password: { type: string, format: password, minLength: 8 }
  *     User:
  *       type: object
  *       properties:
@@ -46,6 +53,21 @@ export function createAuthRoutes(controller, authService) {
    *       401: { $ref: '#/components/responses/Unauthorized' }
    */
   router.post('/login', asyncHandler(controller.login));
+
+  /**
+   * @openapi
+   * /api/auth/register:
+   *   post:
+   *     tags: [Auth]
+   *     summary: Create an employee account and log it in
+   *     description: The role is always employee; any role in the body is ignored.
+   *     requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RegisterInput' } } } }
+   *     responses:
+   *       201: { description: Account created, content: { application/json: { schema: { $ref: '#/components/schemas/LoginResult' } } } }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       409: { description: Email already registered, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   */
+  router.post('/register', asyncHandler(controller.register));
 
   /**
    * @openapi

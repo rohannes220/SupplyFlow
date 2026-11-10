@@ -1,32 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import * as authApi from '../services/authApi.js';
+import { tokenStore } from '../services/tokenStore.js';
 
-export const TOKEN_STORAGE_KEY = 'supplyflow_token';
-
-// Storage can throw (e.g. blocked in private mode); treat that as "no saved session".
-const tokenStore = {
-  read() {
-    try {
-      return localStorage.getItem(TOKEN_STORAGE_KEY);
-    } catch {
-      return null;
-    }
-  },
-  write(token) {
-    try {
-      localStorage.setItem(TOKEN_STORAGE_KEY, token);
-    } catch {
-      // The session still works until the page is reloaded.
-    }
-  },
-  clear() {
-    try {
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
-    } catch {
-      // Nothing stored to clear.
-    }
-  },
-};
+export { TOKEN_STORAGE_KEY } from '../services/tokenStore.js';
 
 const AuthContext = createContext(null);
 
@@ -67,6 +43,17 @@ export function AuthProvider({ api = authApi, children }) {
     [api],
   );
 
+  const register = useCallback(
+    async (name, email, password) => {
+      const result = await api.register(name, email, password);
+      tokenStore.write(result.token);
+      setToken(result.token);
+      setUser(result.user);
+      return result.user;
+    },
+    [api],
+  );
+
   const logout = useCallback(() => {
     tokenStore.clear();
     setToken(null);
@@ -74,8 +61,8 @@ export function AuthProvider({ api = authApi, children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, token, isLoading, login, logout }),
-    [user, token, isLoading, login, logout],
+    () => ({ user, token, isLoading, login, register, logout }),
+    [user, token, isLoading, login, register, logout],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

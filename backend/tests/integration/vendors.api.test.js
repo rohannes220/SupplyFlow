@@ -237,9 +237,21 @@ describe('/api/vendors', () => {
     expect(await vendorModel.findById(1)).not.toBeNull();
   });
 
-  it('keeps createApp({ orderModel }) working without vendors or auth', async () => {
-    const ordersOnly = createApp({ orderModel: createInMemoryOrderModel() });
-    expect((await request(ordersOnly).get('/api/orders')).status).toBe(200);
-    expect((await request(ordersOnly).get('/api/vendors')).status).toBe(404);
+  it('refuses to build an app without auth, so vendors and orders are never unprotected', () => {
+    expect(() => createApp({ orderModel: createInMemoryOrderModel(), vendorModel })).toThrow(
+      /userModel/,
+    );
+  });
+
+  it('does not mount /api/vendors when no vendorModel is given', async () => {
+    const withoutVendors = createApp({
+      orderModel: createInMemoryOrderModel(),
+      userModel: createInMemoryUserModel(),
+      jwtSecret: TEST_JWT_SECRET,
+    });
+    const res = await request(withoutVendors)
+      .get('/api/vendors')
+      .set('Authorization', bearer(admin));
+    expect(res.status).toBe(404);
   });
 });

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import pg from 'pg';
 import { readFile } from 'node:fs/promises';
 import { createVendorModel } from '../../models/vendorModel.js';
+import { seedDemoVendors } from '../../db/seeds/demoVendors.js';
 
 const url = process.env.TEST_DATABASE_URL;
 
@@ -122,6 +123,37 @@ describe.skipIf(!url)('vendorModel (PostgreSQL)', () => {
       expect(await model.isActive(1)).toBe(true);
       expect(await model.isActive(2)).toBe(false);
       expect(await model.isActive(99)).toBe(false);
+    });
+  });
+
+  describe('seedDemoVendors (data/vendors.csv)', () => {
+    it('inserts the 140 CSV vendors with their IDs and statuses', async () => {
+      expect(await seedDemoVendors(pool)).toBe(140);
+
+      expect(await model.findById(1)).toMatchObject({
+        id: 1,
+        name: 'Highland Plumbing Services',
+        phone: '7815559024',
+        status: 'Active',
+      });
+      expect(await model.findAll({ status: 'Inactive' })).toHaveLength(10);
+      expect(await model.isActive(7)).toBe(false);
+    });
+
+    it('is safe to re-run and keeps edits made in the app', async () => {
+      await seedDemoVendors(pool);
+      await model.update(1, vendor({ email: 'edited@example.com', name: 'Edited Name' }));
+
+      expect(await seedDemoVendors(pool)).toBe(0);
+      const { rows } = await pool.query('SELECT count(*)::int AS n FROM vendors');
+      expect(rows[0].n).toBe(140);
+      expect(await model.findById(1)).toMatchObject({ name: 'Edited Name' });
+    });
+
+    it('moves the id sequence past the seeded IDs so new vendors get 141', async () => {
+      await seedDemoVendors(pool);
+      const created = await model.create(vendor({ email: 'new@example.com' }));
+      expect(created.id).toBe(141);
     });
   });
 });
