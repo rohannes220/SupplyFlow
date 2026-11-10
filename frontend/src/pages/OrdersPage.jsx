@@ -3,8 +3,9 @@ import * as orderApi from '../services/orderApi.js';
 import Modal from '../components/Modal.jsx';
 import OrderForm from '../components/OrderForm.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
-import { formatCurrency, formatUsPhone } from '../utils/format.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { allowedNextStatuses } from '@supplyflow/shared/orderRules';
+import { formatCurrency, formatUsPhone } from '../utils/format.js';
 
 const COLUMNS = [
   'Order ID',
@@ -18,20 +19,10 @@ const COLUMNS = [
   'Actions',
 ];
 
-const TRANSITIONS = {
-  Draft: ['Pending', 'Cancelled'],
-  Pending: ['Approved', 'Cancelled'],
-  Approved: ['Shipped'],
-  Shipped: ['Delivered'],
-  Delivered: [],
-  Cancelled: [],
-};
-
 function allowedStatuses(order, user) {
-  const statuses = TRANSITIONS[order.status] ?? [];
-  if (user.role === 'admin') return statuses;
-  if (order.createdBy !== user.id) return [];
-  return statuses.filter((status) => status === 'Pending' || status === 'Cancelled');
+  const statuses = allowedNextStatuses(order.status, user?.role);
+  if (user?.role === 'admin') return statuses;
+  return order.createdBy === user?.id ? statuses : [];
 }
 
 export default function OrdersPage({ api = orderApi }) {

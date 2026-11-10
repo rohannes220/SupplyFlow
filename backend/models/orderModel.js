@@ -45,21 +45,29 @@ export function createOrderModel(db) {
 
     async create(order) {
       const { rows } = await db.query(
-        `INSERT INTO orders (vendor_id, order_amount, customer_name, customer_city,
+        `WITH active_vendor AS MATERIALIZED (
+           SELECT id FROM vendors WHERE id = $1 AND status = 'Active' FOR SHARE
+         )
+         INSERT INTO orders (vendor_id, order_amount, customer_name, customer_city,
            customer_state, customer_phone, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         SELECT $1, $2, $3, $4, $5, $6, $7 FROM active_vendor
          RETURNING ${COLUMNS}`,
-        [...toParams(order), order.createdBy],
+        [...toParams(order), order.createdBy ?? null],
       );
-      return toOrder(rows[0]);
+      return rows[0] ? toOrder(rows[0]) : null;
     },
 
     async update(orderId, order, expectedStatus) {
       const { rows } = await db.query(
-        `UPDATE orders
+        `WITH active_vendor AS MATERIALIZED (
+           SELECT id FROM vendors WHERE id = $1 AND status = 'Active' FOR SHARE
+         )
+         UPDATE orders
             SET vendor_id = $1, order_amount = $2, customer_name = $3, customer_city = $4,
                 customer_state = $5, customer_phone = $6, updated_at = now()
-          WHERE order_id = $7 AND status = $8
+          WHERE order_id = $7
+            AND status = $8
+            AND (vendor_id = $1 OR EXISTS (SELECT 1 FROM active_vendor))
          RETURNING ${COLUMNS}`,
         [...toParams(order), orderId, expectedStatus],
       );

@@ -162,7 +162,7 @@ export default function OrderForm({ onSubmit, onCancel, initialOrder = null }) {
         <Field
           id={id('vendorId')}
           label="Vendor ID"
-          hint="Whole number, e.g. 3"
+          hint="Enter the ID of an active vendor"
           error={errors.vendorId}
         >
           <input

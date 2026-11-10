@@ -1,6 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
+const NAV_ITEMS = [
+  { to: '/', label: 'Dashboard', isActive: (path) => path === '/' },
+  { to: '/orders', label: 'Purchase Orders', isActive: (path) => path.startsWith('/orders') },
+  { to: '/vendors', label: 'Vendors', isActive: (path) => path.startsWith('/vendors') },
+];
+
 const ROLE_LABELS = { admin: 'Admin', employee: 'Employee' };
 
 const initials = (name) =>
@@ -47,7 +53,6 @@ function AccountMenu() {
 export default function Layout({ children }) {
   const { pathname } = useLocation();
   const { user } = useAuth();
-  const ordersActive = pathname === '/' || pathname.startsWith('/orders');
 
   return (
     <div className="min-h-screen bg-slate-50 md:pl-60">
@@ -58,16 +63,22 @@ export default function Layout({ children }) {
           </span>
           SupplyFlow
         </div>
-        <nav aria-label="Main" className="px-3">
-          <Link
-            to="/orders"
-            aria-current={ordersActive ? 'page' : undefined}
-            className={`block rounded-md px-3 py-2 text-sm font-medium ${
-              ordersActive ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-navy-800'
-            }`}
-          >
-            Purchase Orders
-          </Link>
+        <nav aria-label="Main" className="space-y-1 px-3">
+          {NAV_ITEMS.map(({ to, label, isActive }) => {
+            const active = isActive(pathname);
+            return (
+              <Link
+                key={to}
+                to={to}
+                aria-current={active ? 'page' : undefined}
+                className={`block rounded-md px-3 py-2 text-sm font-medium ${
+                  active ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-navy-800'
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
           {user?.role === 'admin' && (
             <Link
               to="/users"

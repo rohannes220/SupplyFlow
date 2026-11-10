@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     "./orderRules": "./orderRules.js",
-    "./usLocations": "./usLocations.js"
+    "./usLocations": "./usLocations.js",
+    "./vendorRules": "./vendorRules.js"
   }
 }

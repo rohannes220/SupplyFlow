@@ -3,6 +3,8 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import OrdersPage from './OrdersPage.jsx';
 
+beforeEach(() => localStorage.clear());
+
 const auth = vi.hoisted(() => ({ user: { id: 1, role: 'admin' }, token: 'test-token' }));
 vi.mock('../context/AuthContext.jsx', () => ({ useAuth: () => auth }));
 
@@ -136,7 +138,7 @@ describe('OrdersPage', () => {
   it('closes the modal with Escape', async () => {
     const user = userEvent.setup();
     render(<OrdersPage api={fakeApi()} />);
-    await user.click(screen.getByRole('button', { name: /add order/i }));
+    await user.click(await screen.findByRole('button', { name: /add order/i }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -152,6 +154,7 @@ describe('OrdersPage', () => {
     const dialog = screen.getByRole('dialog', { name: /update order #1 status/i });
     expect(dialog).toBeInTheDocument();
 
+    // A Draft order can only be submitted (Pending) or cancelled; see AGENTS.md Decisions.
     const select = within(dialog).getByLabelText(/order status/i);
     await user.selectOptions(select, 'Pending');
     await user.click(within(dialog).getByRole('button', { name: /update status/i }));
