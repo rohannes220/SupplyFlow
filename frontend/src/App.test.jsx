@@ -11,7 +11,7 @@ const json = (status, body) => ({
   json: async () => body,
 });
 
-/** Fake backend: /api/auth/me accepts only "valid-token"; orders list is empty. */
+/** Fake backend: /api/auth/me accepts only "valid-token"; orders list and dashboard are empty. */
 function mockBackend() {
   globalThis.fetch = vi.fn(async (url, init = {}) => {
     if (url === '/api/auth/me') {
@@ -20,6 +20,17 @@ function mockBackend() {
         : json(401, { error: { message: 'Invalid or expired token' } });
     }
     if (url === '/api/orders') return json(200, []);
+    if (url === '/api/dashboard') {
+      return json(200, {
+        totalOrders: 0,
+        pendingOrders: 0,
+        activeVendors: 0,
+        totalSpending: 0,
+        overdueDeliveries: null,
+        ordersByStatus: {},
+        recentOrders: [],
+      });
+    }
     return json(404, { error: { message: `Unexpected request ${url}` } });
   });
 }
@@ -41,14 +52,14 @@ describe('App', () => {
 
     expect(await screen.findByLabelText(/email/i)).toBeInTheDocument();
     expect(window.location.pathname).toBe('/login');
-    expect(screen.queryByRole('heading', { name: 'Purchase Orders' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Dashboard' })).not.toBeInTheDocument();
   });
 
-  it('shows the protected app at "/" with a valid stored token', async () => {
+  it('shows the protected app (the Dashboard) at "/" with a valid stored token', async () => {
     localStorage.setItem(TOKEN_STORAGE_KEY, 'valid-token');
     renderAppAt('/');
 
-    expect(await screen.findByRole('heading', { name: 'Purchase Orders' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Dashboard', level: 1 })).toBeInTheDocument();
     expect(screen.getByText(adminUser.name)).toBeInTheDocument();
     expect(window.location.pathname).toBe('/');
   });

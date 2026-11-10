@@ -68,6 +68,24 @@ describe('resolveDependencies', () => {
       }
     });
 
+    it('provides an in-memory dashboard model over the same orders and vendors', async () => {
+      const { dashboardModel, orderModel } = await resolveDependencies({}, { logger: quiet });
+
+      const metrics = await dashboardModel.getMetrics({ today: '2026-11-10' });
+      expect(metrics).toMatchObject({ totalOrders: 140, pendingOrders: 28, activeVendors: 130 });
+      expect(metrics.overdueDeliveries).toBeNull();
+
+      await orderModel.create({
+        vendorId: 1,
+        orderAmount: 10,
+        customerName: 'Sarah Chen',
+        customerCity: 'Atlanta',
+        customerState: 'GA',
+        customerPhone: '4045550123',
+      });
+      expect((await dashboardModel.getMetrics({ today: '2026-11-10' })).totalOrders).toBe(141);
+    });
+
     it('generates a different secret each start', async () => {
       const a = await resolveDependencies({}, { logger: quiet });
       const b = await resolveDependencies({}, { logger: quiet });
