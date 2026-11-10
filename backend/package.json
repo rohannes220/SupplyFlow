@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js",
+    "dev": "node --env-file=.env --watch server.js",
     "migrate": "node db/migrate.js",
     "seed": "node --env-file=.env db/seed.js",
     "test": "vitest run",

@@ -5,12 +5,12 @@ import Layout from './Layout.jsx';
 import { TOKEN_STORAGE_KEY } from '../context/AuthContext.jsx';
 import { adminUser, employeeUser, renderWithAuth } from '../test/authTestUtils.jsx';
 
-const renderLayout = (user) =>
+const renderLayout = (user, route = '/') =>
   renderWithAuth(
     <Layout>
       <p>Page body</p>
     </Layout>,
-    { user },
+    { user, route },
   );
 
 beforeEach(() => localStorage.clear());
@@ -24,6 +24,24 @@ describe('Layout', () => {
     const account = await screen.findByRole('region', { name: /signed in as/i });
     expect(within(account).getByText(user.name)).toBeInTheDocument();
     expect(within(account).getByText(role)).toBeInTheDocument();
+  });
+
+  it('has Purchase Orders and Vendors links in the sidebar', async () => {
+    renderLayout(employeeUser);
+    const nav = within(await screen.findByRole('navigation', { name: /main/i }));
+    expect(nav.getByRole('link', { name: 'Purchase Orders' })).toHaveAttribute('href', '/orders');
+    expect(nav.getByRole('link', { name: 'Vendors' })).toHaveAttribute('href', '/vendors');
+  });
+
+  it.each([
+    ['/vendors', 'Vendors', 'Purchase Orders'],
+    ['/orders', 'Purchase Orders', 'Vendors'],
+    ['/', 'Purchase Orders', 'Vendors'],
+  ])('marks the current section on %s', async (route, current, other) => {
+    renderLayout(employeeUser, route);
+    const nav = within(await screen.findByRole('navigation', { name: /main/i }));
+    expect(nav.getByRole('link', { name: current })).toHaveAttribute('aria-current', 'page');
+    expect(nav.getByRole('link', { name: other })).not.toHaveAttribute('aria-current');
   });
 
   it('renders the page content', async () => {

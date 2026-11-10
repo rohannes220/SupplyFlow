@@ -5,6 +5,9 @@ const STYLES = {
   Shipped: 'bg-indigo-50 text-indigo-700 ring-indigo-300',
   Delivered: 'bg-green-50 text-green-700 ring-green-300',
   Cancelled: 'bg-red-50 text-red-700 ring-red-300',
+  // Vendor statuses
+  Active: 'bg-green-50 text-green-700 ring-green-300',
+  Inactive: 'bg-slate-100 text-slate-600 ring-slate-300',
 };
 
 export default function StatusBadge({ status }) {
