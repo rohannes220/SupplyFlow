@@ -31,6 +31,9 @@ export function createInMemoryUserModel(seed = Object.values(demoUsers)) {
   const rows = seed.map(toRow);
 
   return {
+    async listPublic() {
+      return rows.map(({ id, name, email, role }) => ({ id, name, email, role }));
+    },
     async findByEmail(email) {
       const row = rows.find((r) => r.email === email);
       return row ? { ...row } : null;

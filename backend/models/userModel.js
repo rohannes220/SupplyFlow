@@ -15,6 +15,11 @@ function toUser(row) {
 /** Data access for the users table. All queries are parameterized. */
 export function createUserModel(db) {
   return {
+    async listPublic() {
+      const { rows } = await db.query('SELECT id, name, email, role FROM users ORDER BY name, id');
+      return rows;
+    },
+
     async findByEmail(email) {
       const { rows } = await db.query(`SELECT ${COLUMNS} FROM users WHERE email = $1`, [email]);
       return rows[0] ? toUser(rows[0]) : null;

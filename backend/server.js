@@ -10,29 +10,23 @@ let orderModel;
 let userModel;
 
 if (process.env.DATABASE_URL) {
-  try {
-    const { pool } = await import('./db/pool.js');
-    const { createOrderModel } = await import('./models/orderModel.js');
-    const { createUserModel } = await import('./models/userModel.js');
-    // Test PostgreSQL connectivity
-    await pool.query('SELECT 1');
-    console.log('Connected to PostgreSQL database');
-    orderModel = createOrderModel(pool);
-    userModel = createUserModel(pool);
-  } catch (err) {
-    console.warn(
-      `PostgreSQL unavailable (${err.message}). Using in-memory store with demo orders.`,
-    );
-    orderModel = createInMemoryOrderModel(DEMO_ORDERS);
-  }
+  const { pool } = await import('./db/pool.js');
+  const { createOrderModel } = await import('./models/orderModel.js');
+  const { createUserModel } = await import('./models/userModel.js');
+  await pool.query('SELECT 1');
+  console.log('Connected to PostgreSQL database');
+  orderModel = createOrderModel(pool);
+  userModel = createUserModel(pool);
 } else {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('DATABASE_URL must be set in production');
+  }
   console.log('DATABASE_URL not set. Running with 140 sample orders in memory.');
   orderModel = createInMemoryOrderModel(DEMO_ORDERS);
 }
 
 let jwtSecret = process.env.JWT_SECRET;
 if (!userModel) {
-  // Dev-only fallback so register/login work without PostgreSQL; accounts vanish on restart.
   console.warn('Using in-memory users (no persistence). Set DATABASE_URL for a real database.');
   userModel = createInMemoryUserModel([]);
   jwtSecret ||= randomBytes(32).toString('hex');

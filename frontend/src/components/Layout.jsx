@@ -46,6 +46,7 @@ function AccountMenu() {
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
+  const { user } = useAuth();
   const ordersActive = pathname === '/' || pathname.startsWith('/orders');
 
   return (
@@ -67,6 +68,15 @@ export default function Layout({ children }) {
           >
             Purchase Orders
           </Link>
+          {user?.role === 'admin' && (
+            <Link
+              to="/users"
+              aria-current={pathname === '/users' ? 'page' : undefined}
+              className="block rounded-md px-3 py-2 text-sm font-medium text-slate-300 hover:bg-navy-800"
+            >
+              Users
+            </Link>
+          )}
         </nav>
       </aside>
       <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 py-3 sm:px-8">

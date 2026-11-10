@@ -7,6 +7,7 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "migrate": "node db/migrate.js",
+    "admin:grant": "node --env-file=.env db/grantAdmin.js",
     "seed": "node --env-file=.env db/seed.js",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"

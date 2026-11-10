@@ -1,7 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import OrdersPage from './OrdersPage.jsx';
+
+const auth = vi.hoisted(() => ({ user: { id: 1, role: 'admin' }, token: 'test-token' }));
+vi.mock('../context/AuthContext.jsx', () => ({ useAuth: () => auth }));
 
 const existing = {
   orderId: 1,
@@ -22,6 +25,11 @@ function fakeApi(orders = [existing]) {
       ...input,
       status: 'Draft',
     })),
+    updateOrder: vi.fn().mockImplementation(async (id, input) => ({
+      ...existing,
+      ...input,
+      orderId: id,
+    })),
     updateOrderStatus: vi.fn().mockImplementation(async (id, status) => ({
       ...existing,
       orderId: id,
@@ -32,6 +40,48 @@ function fakeApi(orders = [existing]) {
 }
 
 describe('OrdersPage', () => {
+  beforeEach(() => {
+    auth.user = { id: 1, role: 'admin' };
+  });
+
+  it('hides other employees’ controls and does not offer approval to an employee', async () => {
+    auth.user = { id: 2, role: 'employee' };
+    const user = userEvent.setup();
+    render(
+      <OrdersPage
+        api={fakeApi([
+          { ...existing, orderId: 1, createdBy: 2 },
+          { ...existing, orderId: 2, createdBy: 3, customerName: 'Another employee' },
+        ])}
+      />,
+    );
+    const otherRow = (await screen.findByText('Another employee')).closest('tr');
+    expect(within(otherRow).queryByRole('button', { name: /update|delete|edit/i })).toBeNull();
+    const ownRow = screen.getByText('#1').closest('tr');
+    await user.click(within(ownRow).getByRole('button', { name: /update/i }));
+    expect(screen.queryByRole('option', { name: 'Approved' })).toBeNull();
+    expect(screen.getByRole('option', { name: 'Pending' })).toBeInTheDocument();
+  });
+
+  it('lets an employee edit their own draft', async () => {
+    auth.user = { id: 2, role: 'employee' };
+    const user = userEvent.setup();
+    const api = fakeApi([{ ...existing, createdBy: 2 }]);
+    render(<OrdersPage api={api} />);
+    await screen.findByText('Mike Johnson');
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const dialog = screen.getByRole('dialog', { name: /edit order/i });
+    const city = within(dialog).getByLabelText(/customer city/i);
+    await user.clear(city);
+    await user.type(city, 'Dallas');
+    await user.click(within(dialog).getByRole('button', { name: /save changes/i }));
+    expect(api.updateOrder).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ customerCity: 'Dallas' }),
+      'test-token',
+    );
+    expect(await screen.findByText('Dallas')).toBeInTheDocument();
+  });
   it('lists orders with every field', async () => {
     render(<OrdersPage api={fakeApi()} />);
     const row = (await screen.findByText('Mike Johnson')).closest('tr');
@@ -76,6 +126,7 @@ describe('OrdersPage', () => {
 
     expect(api.createOrder).toHaveBeenCalledWith(
       expect.objectContaining({ vendorId: 7, customerState: 'PR', customerPhone: '7875550142' }),
+      'test-token',
     );
     expect(await screen.findByText(/order #2 added/i)).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -102,11 +153,11 @@ describe('OrdersPage', () => {
     expect(dialog).toBeInTheDocument();
 
     const select = within(dialog).getByLabelText(/order status/i);
-    await user.selectOptions(select, 'Shipped');
+    await user.selectOptions(select, 'Pending');
     await user.click(within(dialog).getByRole('button', { name: /update status/i }));
 
-    expect(api.updateOrderStatus).toHaveBeenCalledWith(1, 'Shipped');
-    expect(await screen.findByText(/order #1 status updated to shipped/i)).toBeInTheDocument();
+    expect(api.updateOrderStatus).toHaveBeenCalledWith(1, 'Pending', 'test-token');
+    expect(await screen.findByText(/order #1 status updated to pending/i)).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
@@ -122,7 +173,7 @@ describe('OrdersPage', () => {
     expect(dialog).toHaveTextContent(/permanently deleted from the system/i);
 
     await user.click(within(dialog).getByRole('button', { name: /yes, delete order/i }));
-    expect(api.deleteOrder).toHaveBeenCalledWith(1);
+    expect(api.deleteOrder).toHaveBeenCalledWith(1, 'test-token');
     expect(await screen.findByText(/order #1 was successfully deleted/i)).toBeInTheDocument();
     expect(screen.queryByText('Mike Johnson')).not.toBeInTheDocument();
   });

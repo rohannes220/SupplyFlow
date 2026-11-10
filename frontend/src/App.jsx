@@ -5,6 +5,8 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import OrdersPage from './pages/OrdersPage.jsx';
+import UsersPage from './pages/UsersPage.jsx';
+import RoleGate from './components/RoleGate.jsx';
 
 /** Every route under this one requires login and renders inside the sidebar layout. */
 function ProtectedLayout() {
@@ -27,6 +29,14 @@ export default function App() {
           <Route element={<ProtectedLayout />}>
             <Route path="/" element={<OrdersPage />} />
             <Route path="/orders" element={<OrdersPage />} />
+            <Route
+              path="/users"
+              element={
+                <RoleGate roles={['admin']} fallback={<Navigate to="/" replace />}>
+                  <UsersPage />
+                </RoleGate>
+              }
+            />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

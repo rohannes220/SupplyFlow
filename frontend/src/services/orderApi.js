@@ -28,28 +28,37 @@ async function request(path, init = {}) {
   return body;
 }
 
-export function listOrders() {
-  return request('/api/orders');
+export function listOrders(token) {
+  return request('/api/orders', { headers: { Authorization: `Bearer ${token}` } });
 }
 
-export function createOrder(input) {
+export function createOrder(input, token) {
   return request('/api/orders', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify(input),
   });
 }
 
-export function updateOrderStatus(orderId, status) {
+export function updateOrder(orderId, input, token) {
+  return request(`/api/orders/${orderId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateOrderStatus(orderId, status, token) {
   return request(`/api/orders/${orderId}/status`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ status }),
   });
 }
 
-export function deleteOrder(orderId) {
+export function deleteOrder(orderId, token) {
   return request(`/api/orders/${orderId}`, {
     method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
   });
 }

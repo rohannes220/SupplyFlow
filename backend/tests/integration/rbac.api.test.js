@@ -92,4 +92,38 @@ describe('role-based access', () => {
       ).status,
     ).toBe(400);
   });
+
+  it('lets the owner edit and cancel a draft but blocks other users', async () => {
+    const created = await request(app)
+      .post('/api/orders')
+      .auth(employee, { type: 'bearer' })
+      .send(validOrderBody);
+    const path = `/api/orders/${created.body.orderId}`;
+    expect(
+      (
+        await request(app)
+          .put(path)
+          .auth(employee, { type: 'bearer' })
+          .send({
+            ...validOrderBody,
+            customerCity: 'Boston',
+          })
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await request(app).patch(`${path}/status`).auth(other, { type: 'bearer' }).send({
+          status: 'Cancelled',
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await request(app).patch(`${path}/status`).auth(employee, { type: 'bearer' }).send({
+          status: 'Cancelled',
+        })
+      ).status,
+    ).toBe(200);
+    expect((await request(app).delete(path).auth(employee, { type: 'bearer' })).status).toBe(409);
+  });
 });

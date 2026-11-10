@@ -1,7 +1,15 @@
-import { ValidationError, NotFoundError, ConflictError } from '../utils/errors.js';
+import { ValidationError, NotFoundError, ConflictError, ForbiddenError } from '../utils/errors.js';
 import { validateOrder, isPositiveInt } from '@supplyflow/shared/orderRules';
 
 const EDITABLE_STATUS = 'Draft';
+const TRANSITIONS = {
+  Draft: ['Pending', 'Cancelled'],
+  Pending: ['Approved', 'Cancelled'],
+  Approved: ['Shipped'],
+  Shipped: ['Delivered'],
+  Delivered: [],
+  Cancelled: [],
+};
 
 /**
  * Validates a create/update payload and returns the normalized order fields.
@@ -48,22 +56,22 @@ export function createOrderService(orderModel) {
       return findExisting(rawId);
     },
 
-    async createOrder(body) {
+    async createOrder(body, user) {
       // TODO(#4): verify vendorId refers to an existing, Active vendor.
-      return orderModel.create(validateOrderInput(body));
+      return orderModel.create({ ...validateOrderInput(body), createdBy: user.id });
     },
 
-    async updateOrder(rawId, body) {
+    async updateOrder(rawId, body, user) {
       const existing = await findExisting(rawId);
+      if (user.role !== 'admin' && existing.createdBy !== user.id) throw new ForbiddenError();
       const fields = validateOrderInput(body);
       assertEditable(existing, 'edited');
-      // TODO(#7): restrict edits to the employee who created the order.
-      const updated = await orderModel.update(existing.orderId, fields);
-      if (!updated) throw new NotFoundError(`Order ${existing.orderId} not found`);
+      const updated = await orderModel.update(existing.orderId, fields, existing.status);
+      if (!updated) throw new ConflictError('Order changed; refresh and try again');
       return updated;
     },
 
-    async updateOrderStatus(rawId, status) {
+    async updateOrderStatus(rawId, status, user) {
       const existing = await findExisting(rawId);
       const VALID_STATUSES = ['Draft', 'Pending', 'Approved', 'Shipped', 'Delivered', 'Cancelled'];
       if (!VALID_STATUSES.includes(status)) {
@@ -74,16 +82,25 @@ export function createOrderService(orderModel) {
           },
         ]);
       }
-      const updated = await orderModel.updateStatus(existing.orderId, status);
-      if (!updated) throw new NotFoundError(`Order ${existing.orderId} not found`);
+      if (user.role !== 'admin') {
+        if (existing.createdBy !== user.id || !['Pending', 'Cancelled'].includes(status)) {
+          throw new ForbiddenError();
+        }
+      }
+      if (!TRANSITIONS[existing.status]?.includes(status)) {
+        throw new ValidationError([{ field: 'status', message: 'Invalid status transition' }]);
+      }
+      const updated = await orderModel.updateStatus(existing.orderId, status, existing.status);
+      if (!updated) throw new ConflictError('Order changed; refresh and try again');
       return updated;
     },
 
-    async deleteOrder(rawId) {
+    async deleteOrder(rawId, user) {
       const existing = await findExisting(rawId);
+      if (user.role !== 'admin' && existing.createdBy !== user.id) throw new ForbiddenError();
       assertEditable(existing, 'deleted');
-      const removed = await orderModel.remove(existing.orderId);
-      if (!removed) throw new NotFoundError(`Order ${existing.orderId} not found`);
+      const removed = await orderModel.remove(existing.orderId, existing.status);
+      if (!removed) throw new ConflictError('Order changed; refresh and try again');
     },
   };
 }

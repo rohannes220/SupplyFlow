@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createOrderService } from '../../services/orderService.js';
 import { NotFoundError, ValidationError, ConflictError } from '../../utils/errors.js';
 import { createInMemoryOrderModel, validOrderBody } from '../helpers/inMemoryOrderModel.js';
+const admin = { id: 1, role: 'admin' };
 
 describe('orderService', () => {
   let model;
@@ -13,7 +14,7 @@ describe('orderService', () => {
   });
 
   it('creates an order with a generated id and Draft status', async () => {
-    const order = await service.createOrder(validOrderBody);
+    const order = await service.createOrder(validOrderBody, admin);
     expect(order).toMatchObject({
       orderId: 1,
       vendorId: 3,
@@ -24,21 +25,21 @@ describe('orderService', () => {
   });
 
   it('does not touch the model when creation input is invalid', async () => {
-    await expect(service.createOrder({ ...validOrderBody, customerState: 'BC' })).rejects.toThrow(
-      ValidationError,
-    );
+    await expect(
+      service.createOrder({ ...validOrderBody, customerState: 'BC' }, admin),
+    ).rejects.toThrow(ValidationError);
     expect(await model.findAll()).toEqual([]);
   });
 
   it('lists orders newest first', async () => {
-    await service.createOrder(validOrderBody);
-    await service.createOrder({ ...validOrderBody, customerName: 'Mike Johnson' });
+    await service.createOrder(validOrderBody, admin);
+    await service.createOrder({ ...validOrderBody, customerName: 'Mike Johnson' }, admin);
     const orders = await service.listOrders();
     expect(orders.map((o) => o.orderId)).toEqual([2, 1]);
   });
 
   it('gets an order by id', async () => {
-    const created = await service.createOrder(validOrderBody);
+    const created = await service.createOrder(validOrderBody, admin);
     expect(await service.getOrder(String(created.orderId))).toEqual(created);
   });
 
@@ -55,12 +56,16 @@ describe('orderService', () => {
   });
 
   it('updates a Draft order with validated, normalized data', async () => {
-    const created = await service.createOrder(validOrderBody);
-    const updated = await service.updateOrder(String(created.orderId), {
-      ...validOrderBody,
-      orderAmount: 99.99,
-      customerState: 'texas',
-    });
+    const created = await service.createOrder(validOrderBody, admin);
+    const updated = await service.updateOrder(
+      String(created.orderId),
+      {
+        ...validOrderBody,
+        orderAmount: 99.99,
+        customerState: 'texas',
+      },
+      admin,
+    );
     expect(updated).toMatchObject({
       orderId: created.orderId,
       orderAmount: 99.99,
@@ -69,19 +74,23 @@ describe('orderService', () => {
   });
 
   it('rejects an invalid update without changing the order', async () => {
-    const created = await service.createOrder(validOrderBody);
+    const created = await service.createOrder(validOrderBody, admin);
     await expect(
-      service.updateOrder(String(created.orderId), {
-        ...validOrderBody,
-        customerPhone: '+52 55 1234 5678',
-      }),
+      service.updateOrder(
+        String(created.orderId),
+        {
+          ...validOrderBody,
+          customerPhone: '+52 55 1234 5678',
+        },
+        admin,
+      ),
     ).rejects.toThrow(ValidationError);
     expect(await service.getOrder(String(created.orderId))).toEqual(created);
   });
 
   it('deletes a Draft order', async () => {
-    const created = await service.createOrder(validOrderBody);
-    await service.deleteOrder(String(created.orderId));
+    const created = await service.createOrder(validOrderBody, admin);
+    await service.deleteOrder(String(created.orderId), admin);
     await expect(service.getOrder(String(created.orderId))).rejects.toThrow(NotFoundError);
   });
 
@@ -94,11 +103,11 @@ describe('orderService', () => {
     });
 
     it('cannot be updated', async () => {
-      await expect(service.updateOrder('7', validOrderBody)).rejects.toThrow(ConflictError);
+      await expect(service.updateOrder('7', validOrderBody, admin)).rejects.toThrow(ConflictError);
     });
 
     it('cannot be deleted', async () => {
-      await expect(service.deleteOrder('7')).rejects.toThrow(ConflictError);
+      await expect(service.deleteOrder('7', admin)).rejects.toThrow(ConflictError);
       expect(await model.findById(7)).not.toBeNull();
     });
   });

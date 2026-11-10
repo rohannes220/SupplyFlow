@@ -3,12 +3,15 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import pg from 'pg';
 import { readFile } from 'node:fs/promises';
 import { createOrderModel } from '../../models/orderModel.js';
+import { randomBytes } from 'node:crypto';
 
 const url = process.env.TEST_DATABASE_URL;
 
 describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
   let pool;
   let model;
+  let adminPool;
+  const schema = `order_test_${randomBytes(8).toString('hex')}`;
   const order = {
     vendorId: 3,
     orderAmount: 1234.56,
@@ -19,13 +22,18 @@ describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
   };
 
   beforeAll(async () => {
-    pool = new pg.Pool({ connectionString: url });
-    const sql = await readFile(
-      new URL('../../db/migrations/001_create_orders.sql', import.meta.url),
-      'utf8',
-    );
-    await pool.query('DROP TABLE IF EXISTS orders');
-    await pool.query(sql);
+    adminPool = new pg.Pool({ connectionString: url });
+    await adminPool.query(`CREATE SCHEMA "${schema}"`);
+    pool = new pg.Pool({ connectionString: url, options: `-c search_path=${schema}` });
+    for (const migration of [
+      '001_create_orders.sql',
+      '002_create_users.sql',
+      '003_order_owner.sql',
+    ]) {
+      await pool.query(
+        await readFile(new URL(`../../db/migrations/${migration}`, import.meta.url), 'utf8'),
+      );
+    }
     model = createOrderModel(pool);
   });
 
@@ -35,6 +43,10 @@ describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
 
   afterAll(async () => {
     await pool?.end();
+    if (adminPool) {
+      await adminPool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+      await adminPool.end();
+    }
   });
 
   it('runs a full create/read/update/delete cycle', async () => {
@@ -45,13 +57,17 @@ describe.skipIf(!url)('orderModel (PostgreSQL)', () => {
     expect(await model.findById(1)).toEqual(created);
     expect(await model.findAll()).toEqual([created]);
 
-    const updated = await model.update(1, { ...order, orderAmount: 5, customerState: 'TX' });
+    const updated = await model.update(
+      1,
+      { ...order, orderAmount: 5, customerState: 'TX' },
+      'Draft',
+    );
     expect(updated).toMatchObject({ orderAmount: 5, customerState: 'TX' });
 
-    expect(await model.remove(1)).toBe(true);
+    expect(await model.remove(1, 'Draft')).toBe(true);
     expect(await model.findById(1)).toBeNull();
-    expect(await model.remove(1)).toBe(false);
-    expect(await model.update(1, order)).toBeNull();
+    expect(await model.remove(1, 'Draft')).toBe(false);
+    expect(await model.update(1, order, 'Draft')).toBeNull();
   });
 
   it('enforces domestic-only constraints at the database level', async () => {
