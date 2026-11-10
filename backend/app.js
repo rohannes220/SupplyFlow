@@ -35,6 +35,21 @@ export function createApp({
   app.disable('x-powered-by');
   app.use(express.json({ limit: '100kb' }));
 
+  /**
+   * @openapi
+   * /api/health:
+   *   get:
+   *     tags: [Health]
+   *     summary: Liveness check for the hosting platform (no login needed)
+   *     responses:
+   *       200:
+   *         description: The API process is up
+   *         content: { application/json: { schema: { type: object, properties: { status: { type: string, example: ok } } } } }
+   */
+  app.get('/api/health', (_req, res) => {
+    res.set('Cache-Control', 'no-store').json({ status: 'ok' });
+  });
+
   const authService = createAuthService({ userModel, jwtSecret });
   app.use('/api/auth', createAuthRoutes(createAuthController(authService), authService));
 
