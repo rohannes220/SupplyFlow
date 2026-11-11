@@ -9,8 +9,12 @@ try {
   await seedDemoUsers(pool, {
     employeePassword: process.env.SEED_EMPLOYEE_PASSWORD,
   });
-  const inserted = await seedDemoOrders(pool);
   console.log('Seeded demo user: employee@supplyflow.com');
+
+  const vendorsInserted = await seedDemoVendors(pool);
+  console.log(`Seeded demo vendors from data/vendors.csv: ${vendorsInserted} new.`);
+
+  const ordersInserted = await seedDemoOrders(pool);
   console.log(
     `Seeded demo orders: ${ordersInserted} new, ${DEMO_ORDERS.length - ordersInserted} already present.`,
   );
