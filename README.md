@@ -47,6 +47,10 @@ pnpm dev        # API on http://localhost:4000; UI on http://localhost:5173
 ```
 
 `pnpm lint` and `pnpm test` run checks for every package. Set `TEST_DATABASE_URL` to also run the PostgreSQL model tests.
+On Purchase Orders, use **Filter by status** to view a specific stage. Employees can
+submit their own Draft orders for approval. Administrators can approve Pending orders
+and move them through Shipped and Delivered. Valid status changes update the table
+without a page reload.
 When using a Docker PostgreSQL container, start it before the app. Keep its data volume:
 removing the volume removes the stored accounts and orders. If the container is named
 `supplyflow-db`, restart it with `docker start supplyflow-db`.
