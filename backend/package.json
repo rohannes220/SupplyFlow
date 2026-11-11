@@ -7,13 +7,16 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "migrate": "node db/migrate.js",
+    "seed": "node --env-file=.env db/seed.js",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@supplyflow/shared": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "express": "^4.21.2",
-    "pg": "^8.13.1",
-    "@supplyflow/shared": "workspace:*"
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.8",
