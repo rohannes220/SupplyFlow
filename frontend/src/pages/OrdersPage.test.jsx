@@ -46,6 +46,84 @@ describe('OrdersPage', () => {
     auth.user = { id: 1, role: 'admin' };
   });
 
+  it('filters by status, combines the filter with sorting, and restores all orders', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi([
+      { ...existing, orderId: 1, customerName: 'Draft customer', status: 'Draft', orderAmount: 50 },
+      {
+        ...existing,
+        orderId: 2,
+        customerName: 'Pending high',
+        status: 'Pending',
+        orderAmount: 100,
+      },
+      { ...existing, orderId: 3, customerName: 'Pending low', status: 'Pending', orderAmount: 10 },
+    ]);
+    render(<OrdersPage api={api} />);
+    await screen.findByText('Draft customer');
+    await user.selectOptions(screen.getByLabelText(/filter by status/i), 'Pending');
+    expect(screen.queryByText('Draft customer')).not.toBeInTheDocument();
+    expect(screen.getByText('Pending high')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /group orders ↑/i }));
+    const rows = screen.getAllByRole('row');
+    expect(within(rows[1]).getByText('Pending low')).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText(/filter by status/i), 'Shipped');
+    expect(screen.getByText(/no orders match/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /show all orders/i }));
+    expect(screen.getByText('Draft customer')).toBeInTheDocument();
+    expect(api.listOrders).toHaveBeenCalledTimes(1);
+  });
+
+  it('updates the visible results immediately when an employee submits a draft', async () => {
+    auth.user = { id: 2, role: 'employee' };
+    const user = userEvent.setup();
+    const api = fakeApi([{ ...existing, createdBy: 2 }]);
+    render(<OrdersPage api={api} />);
+    await screen.findByText('Mike Johnson');
+    await user.selectOptions(screen.getByLabelText(/filter by status/i), 'Draft');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+    const dialog = screen.getByRole('dialog', { name: /update order/i });
+    await user.selectOptions(within(dialog).getByLabelText(/order status/i), 'Pending');
+    await user.click(within(dialog).getByRole('button', { name: /update status/i }));
+    expect(await screen.findByText(/no orders match/i)).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText(/filter by status/i), 'Pending');
+    expect(screen.getByText('Mike Johnson')).toBeInTheDocument();
+    expect(api.listOrders).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets an admin approve, ship and deliver a pending order without reloading', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi([{ ...existing, status: 'Pending' }]);
+    render(<OrdersPage api={api} />);
+    await screen.findByText('Mike Johnson');
+    for (const status of ['Approved', 'Shipped', 'Delivered']) {
+      await user.click(screen.getByRole('button', { name: 'Update' }));
+      const dialog = screen.getByRole('dialog', { name: /update order/i });
+      await user.selectOptions(within(dialog).getByLabelText(/order status/i), status);
+      await user.click(within(dialog).getByRole('button', { name: /update status/i }));
+      expect(
+        await screen.findByText(new RegExp(`status updated to ${status}`, 'i')),
+      ).toBeInTheDocument();
+    }
+    expect(api.updateOrderStatus).toHaveBeenCalledTimes(3);
+    expect(api.listOrders).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Update' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the previous status and shows an error when an update fails', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi([{ ...existing, status: 'Pending' }]);
+    api.updateOrderStatus.mockRejectedValue(new Error('Order changed; refresh and try again'));
+    render(<OrdersPage api={api} />);
+    await screen.findByText('Mike Johnson');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+    const dialog = screen.getByRole('dialog', { name: /update order/i });
+    await user.click(within(dialog).getByRole('button', { name: /update status/i }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(/order changed/i);
+    expect(screen.getByText('Pending', { selector: 'span' })).toBeInTheDocument();
+    expect(api.listOrders).toHaveBeenCalledTimes(1);
+  });
+
   it('hides other employees’ controls and does not offer approval to an employee', async () => {
     auth.user = { id: 2, role: 'employee' };
     const user = userEvent.setup();
@@ -61,8 +139,9 @@ describe('OrdersPage', () => {
     expect(within(otherRow).queryByRole('button', { name: /update|delete|edit/i })).toBeNull();
     const ownRow = screen.getByText('#1').closest('tr');
     await user.click(within(ownRow).getByRole('button', { name: /update/i }));
-    expect(screen.queryByRole('option', { name: 'Approved' })).toBeNull();
-    expect(screen.getByRole('option', { name: 'Pending' })).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog', { name: /update order/i });
+    expect(within(dialog).queryByRole('option', { name: 'Approved' })).toBeNull();
+    expect(within(dialog).getByRole('option', { name: 'Pending' })).toBeInTheDocument();
   });
 
   it('lets an employee edit their own draft', async () => {

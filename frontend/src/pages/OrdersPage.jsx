@@ -4,7 +4,7 @@ import Modal from '../components/Modal.jsx';
 import OrderForm from '../components/OrderForm.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { allowedNextStatuses } from '@supplyflow/shared/orderRules';
+import { allowedNextStatuses, ORDER_STATUSES } from '@supplyflow/shared/orderRules';
 import { formatCurrency, formatUsPhone } from '../utils/format.js';
 
 const COLUMNS = [
@@ -37,6 +37,7 @@ export default function OrdersPage({ api = orderApi }) {
 
   // Sorting state: 'none', 'asc' (lowest to highest), 'desc' (highest to lowest)
   const [sortDirection, setSortDirection] = useState('none');
+  const [statusFilter, setStatusFilter] = useState('');
 
   // Updating order status state
   const [updatingOrder, setUpdatingOrder] = useState(null);
@@ -128,7 +129,9 @@ export default function OrdersPage({ api = orderApi }) {
 
   // Sorting and Display calculation
   const displayedOrders = useMemo(() => {
-    const list = [...orders];
+    const list = statusFilter
+      ? orders.filter((order) => order.status === statusFilter)
+      : [...orders];
     if (sortDirection === 'asc') {
       return list.sort((a, b) => Number(a.orderAmount) - Number(b.orderAmount));
     }
@@ -136,7 +139,7 @@ export default function OrdersPage({ api = orderApi }) {
       return list.sort((a, b) => Number(b.orderAmount) - Number(a.orderAmount));
     }
     return list;
-  }, [orders, sortDirection]);
+  }, [orders, sortDirection, statusFilter]);
 
   return (
     <>
@@ -167,10 +170,11 @@ export default function OrdersPage({ api = orderApi }) {
           type="button"
           onClick={() => {
             setSortDirection('none');
+            setStatusFilter('');
             setNotice(`Showing all ${orders.length} total orders.`);
           }}
           className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
-            sortDirection === 'none'
+            sortDirection === 'none' && !statusFilter
               ? 'bg-slate-900 text-white shadow-sm'
               : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
           }`}
@@ -178,7 +182,7 @@ export default function OrdersPage({ api = orderApi }) {
           <span>Show All Orders</span>
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-              sortDirection === 'none'
+              sortDirection === 'none' && !statusFilter
                 ? 'bg-slate-700 text-slate-100'
                 : 'bg-slate-100 text-slate-700'
             }`}
@@ -218,6 +222,25 @@ export default function OrdersPage({ api = orderApi }) {
         >
           <span>Group Orders ↓ (Highest to Lowest)</span>
         </button>
+        <label htmlFor="order-status-filter" className="text-sm font-medium text-slate-700">
+          Filter by status
+        </label>
+        <select
+          id="order-status-filter"
+          value={statusFilter}
+          onChange={(event) => {
+            setStatusFilter(event.target.value);
+            setNotice('');
+          }}
+          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        >
+          <option value="">All statuses</option>
+          {ORDER_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Notifications and Alerts */}
@@ -314,7 +337,9 @@ export default function OrdersPage({ api = orderApi }) {
             {!loading && !loadError && displayedOrders.length === 0 && (
               <tr>
                 <td colSpan={COLUMNS.length} className="px-4 py-10 text-center text-slate-500">
-                  No orders yet. Use “Add Order” to create the first one.
+                  {orders.length === 0
+                    ? 'No orders yet. Use “Add Order” to create the first one.'
+                    : `No orders match the ${statusFilter} status.`}
                 </td>
               </tr>
             )}
