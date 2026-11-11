@@ -9,6 +9,7 @@ import request from 'supertest';
 import { createApp } from '../../app.js';
 import { createOrderModel } from '../../models/orderModel.js';
 import { createUserModel } from '../../models/userModel.js';
+import { createVendorModel } from '../../models/vendorModel.js';
 import { validOrderBody } from '../helpers/inMemoryOrderModel.js';
 
 const url = process.env.TEST_DATABASE_URL;
@@ -24,14 +25,20 @@ describe.skipIf(!url)('RBAC with PostgreSQL', () => {
     for (const migration of [
       '001_create_orders.sql',
       '002_create_users.sql',
+      '003_create_vendors.sql',
       '003_order_owner.sql',
     ]) {
       await pool.query(
         await readFile(new URL(`../../db/migrations/${migration}`, import.meta.url), 'utf8'),
       );
     }
+    // Orders can only be created for an existing Active vendor (validOrderBody uses vendor 3).
+    await pool.query(
+      "INSERT INTO vendors (id, name, email, phone, city, state, status) VALUES (3, 'Active Vendor', 'active@example.com', '5551234567', 'Atlanta', 'GA', 'Active')",
+    );
     app = createApp({
       orderModel: createOrderModel(pool),
+      vendorModel: createVendorModel(pool),
       userModel: createUserModel(pool),
       jwtSecret: 'test-only-secret',
     });
