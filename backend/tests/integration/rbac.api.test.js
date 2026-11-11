@@ -128,4 +128,23 @@ describe('role-based access', () => {
     ).toBe(200);
     expect((await request(app).delete(path).auth(employee, { type: 'bearer' })).status).toBe(409);
   });
+
+  it('allows only an admin to approve, ship and deliver a submitted order', async () => {
+    const created = await request(app)
+      .post('/api/orders')
+      .auth(employee, { type: 'bearer' })
+      .send(validOrderBody);
+    const path = `/api/orders/${created.body.orderId}/status`;
+    const move = (token, status) =>
+      request(app).patch(path).auth(token, { type: 'bearer' }).send({ status });
+    expect((await move(employee, 'Shipped')).status).toBe(400);
+    expect((await move(employee, 'Pending')).body.status).toBe('Pending');
+    expect((await move(employee, 'Approved')).status).toBe(403);
+    expect((await move(admin, 'Approved')).body.status).toBe('Approved');
+    expect((await move(employee, 'Shipped')).status).toBe(403);
+    expect((await move(admin, 'Shipped')).body.status).toBe('Shipped');
+    expect((await move(employee, 'Delivered')).status).toBe(403);
+    expect((await move(admin, 'Delivered')).body.status).toBe('Delivered');
+    expect((await move(admin, 'Pending')).status).toBe(400);
+  });
 });
