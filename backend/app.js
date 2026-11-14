@@ -16,6 +16,8 @@ import { createErrorHandler, notFoundHandler } from './middleware/errorHandler.j
 import { createUserService } from './services/userService.js';
 import { createUserController } from './controllers/userController.js';
 import { createUserRoutes } from './routes/userRoutes.js';
+import { createDocsRoutes } from './routes/docsRoutes.js';
+import { getOpenApiSpec } from './docs/openapi.js';
 
 /**
  * Builds the Express app. Dependencies are injected so tests can avoid PostgreSQL.
@@ -52,6 +54,9 @@ export function createApp({
   app.get('/api/health', (_req, res) => {
     res.set('Cache-Control', 'no-store').json({ status: 'ok' });
   });
+
+  // Public, like /api/health: the OpenAPI JSON and Swagger UI (#14).
+  app.use('/api', createDocsRoutes(getOpenApiSpec()));
 
   const authService = createAuthService({ userModel, jwtSecret });
   app.use('/api/auth', createAuthRoutes(createAuthController(authService), authService));

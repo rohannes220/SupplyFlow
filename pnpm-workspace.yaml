@@ -4,3 +4,5 @@ packages:
   - shared
 allowBuilds:
   esbuild: true
+  # swagger-ui-dist depends on Scarf's install-time telemetry; never run it.
+  '@scarf/scarf': false
