@@ -31,7 +31,7 @@ import { requireAuth } from '../middleware/auth.js';
  *     LoginResult:
  *       type: object
  *       properties:
- *         token: { type: string, description: JWT to send as "Authorization: Bearer <token>" }
+ *         token: { type: string, description: 'JWT to send as "Authorization: Bearer <token>"' }
  *         user: { $ref: '#/components/schemas/User' }
  *   responses:
  *     Unauthorized: { description: Missing, invalid or expired credentials, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }

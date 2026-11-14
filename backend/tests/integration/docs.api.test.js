@@ -100,6 +100,53 @@ describe('GET /api/docs.json', () => {
     expect(operation.security ?? []).toEqual([]);
   });
 
+  it.each(PROTECTED_OPERATIONS)('documents the 401 for %s %s', (path, method) => {
+    expect(res.body.paths?.[path]?.[method]?.responses?.['401']).toBeDefined();
+  });
+
+  it.each(
+    [...PUBLIC_OPERATIONS, ...PROTECTED_OPERATIONS].filter(([, method]) =>
+      ['post', 'put', 'patch'].includes(method),
+    ),
+  )('documents a required JSON request body and a 400 for %s %s', (path, method) => {
+    const operation = res.body.paths?.[path]?.[method];
+    expect(operation?.requestBody?.required).toBe(true);
+    expect(operation?.requestBody?.content?.['application/json']?.schema).toBeDefined();
+    expect(operation?.responses?.['400']).toBeDefined();
+  });
+
+  it.each(PROTECTED_OPERATIONS.filter(([path]) => path.includes('{id}')))(
+    'documents the 400 for a bad id and the 404 for %s %s',
+    (path, method) => {
+      const { responses } = res.body.paths?.[path]?.[method] ?? {};
+      expect(responses?.['400']).toBeDefined();
+      expect(responses?.['404']).toBeDefined();
+    },
+  );
+
+  // Admin-only routes, plus order changes limited to the creator or an admin.
+  it.each([
+    ['/api/users', 'get'],
+    ['/api/vendors', 'post'],
+    ['/api/vendors/{id}', 'put'],
+    ['/api/orders/{id}', 'put'],
+    ['/api/orders/{id}', 'delete'],
+    ['/api/orders/{id}/status', 'patch'],
+  ])('documents the 403 for %s %s', (path, method) => {
+    expect(res.body.paths?.[path]?.[method]?.responses?.['403']).toBeDefined();
+  });
+
+  it.each([
+    ['/api/auth/register', 'post'],
+    ['/api/vendors', 'post'],
+    ['/api/vendors/{id}', 'put'],
+    ['/api/orders/{id}', 'put'],
+    ['/api/orders/{id}', 'delete'],
+    ['/api/orders/{id}/status', 'patch'],
+  ])('documents the 409 for %s %s', (path, method) => {
+    expect(res.body.paths?.[path]?.[method]?.responses?.['409']).toBeDefined();
+  });
+
   it('documents no paths outside /api', () => {
     expect(Object.keys(res.body.paths ?? {}).length).toBeGreaterThan(0);
     for (const path of Object.keys(res.body.paths ?? {})) expect(path).toMatch(/^\/api\//);
@@ -138,6 +185,19 @@ describe('GET /api/docs', () => {
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/text\/html/);
     expect(res.text).toMatch(/swagger-ui/i);
+  });
+
+  // In production the browser is on the Vercel domain, which rewrites /api/* to Render. A
+  // redirect or asset URL that names a host would send it to Render directly.
+  it('redirects only with a path, so it works behind the Vercel /api rewrite', async () => {
+    const res = await request(app).get('/api/docs').set('Host', 'supplyflow.example');
+    if (res.status >= 300 && res.status < 400) {
+      expect(res.headers.location).toBe('/api/docs/');
+    } else {
+      expect(res.status).toBe(200);
+    }
+    const page = await request(app).get('/api/docs/');
+    expect(page.text).not.toMatch(/(?:src|href)="(?:https?:)?\/\//);
   });
 
   it('serves the scripts and styles the page loads', async () => {

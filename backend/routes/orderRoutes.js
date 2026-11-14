@@ -48,7 +48,7 @@ const wrap = (handler) => (req, res, next) => Promise.resolve(handler(req, res, 
  *   responses:
  *     BadRequest: { description: Invalid input or international order, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
  *     NotFound: { description: Order not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
- *     Conflict: { description: Order is no longer Draft, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+ *     Conflict: { description: Order is no longer Draft or changed since it was read; refresh and retry, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
  *   parameters:
  *     OrderId: { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
  */
@@ -64,6 +64,7 @@ export function createOrderRoutes(controller) {
    *     summary: List orders, newest first
    *     responses:
    *       200: { description: Orders, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Order' } } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    *   post:
    *     tags: [Orders]
    *     security: [{ bearerAuth: [] }]
@@ -72,6 +73,7 @@ export function createOrderRoutes(controller) {
    *     responses:
    *       201: { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
    *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    */
   router.get('/', wrap(controller.list));
   router.post('/', wrap(controller.create));
@@ -87,43 +89,33 @@ export function createOrderRoutes(controller) {
    *     responses:
    *       200: { description: Order, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
    *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    *       404: { $ref: '#/components/responses/NotFound' }
    *   put:
    *     tags: [Orders]
    *     security: [{ bearerAuth: [] }]
-   *     summary: Replace a Draft order's fields
+   *     summary: Replace a Draft order's fields (its creator or an admin)
    *     parameters: [{ $ref: '#/components/parameters/OrderId' }]
    *     requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/OrderInput' } } } }
    *     responses:
    *       200: { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
    *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
    *       404: { $ref: '#/components/responses/NotFound' }
    *       409: { $ref: '#/components/responses/Conflict' }
    *   delete:
    *     tags: [Orders]
    *     security: [{ bearerAuth: [] }]
-   *     summary: Delete a Draft order
+   *     summary: Delete a Draft order (its creator or an admin)
    *     parameters: [{ $ref: '#/components/parameters/OrderId' }]
    *     responses:
    *       204: { description: Deleted }
    *       400: { $ref: '#/components/responses/BadRequest' }
-   *       404: { $ref: '#/components/responses/NotFound' }
-   *       409: { $ref: '#/components/responses/Conflict' }
-   */
-  /**
-   * @openapi
-   * /api/orders/{id}/status:
-   *   patch:
-   *     tags: [Orders]
-   *     summary: Transition order status according to role and ownership
-   *     security: [{ bearerAuth: [] }]
-   *     parameters: [{ $ref: '#/components/parameters/OrderId' }]
-   *     requestBody: { required: true, content: { application/json: { schema: { type: object, required: [status], properties: { status: { type: string } } } } } }
-   *     responses:
-   *       200: { description: Updated order }
-   *       400: { $ref: '#/components/responses/BadRequest' }
    *       401: { $ref: '#/components/responses/Unauthorized' }
    *       403: { $ref: '#/components/responses/Forbidden' }
+   *       404: { $ref: '#/components/responses/NotFound' }
+   *       409: { $ref: '#/components/responses/Conflict' }
    */
   router.get('/:id', wrap(controller.get));
   router.put('/:id', wrap(controller.update));
@@ -136,8 +128,8 @@ export function createOrderRoutes(controller) {
    *     description: >
    *       Allowed moves are Draft→Pending, Pending→Approved, Approved→Shipped, Shipped→Delivered,
    *       and Draft or Pending→Cancelled. Delivered and Cancelled are final. Approved, Shipped
-   *       and Delivered are admin-only. An invalid move is rejected (400) before the role is
-   *       checked (403).
+   *       and Delivered are admin-only, and employees can only move orders they created. An
+   *       invalid move is rejected (400) before the role and ownership are checked (403).
    *     security: [{ bearerAuth: [] }]
    *     parameters: [{ $ref: '#/components/parameters/OrderId' }]
    *     requestBody:
@@ -155,6 +147,7 @@ export function createOrderRoutes(controller) {
    *       401: { $ref: '#/components/responses/Unauthorized' }
    *       403: { $ref: '#/components/responses/Forbidden' }
    *       404: { $ref: '#/components/responses/NotFound' }
+   *       409: { $ref: '#/components/responses/Conflict' }
    */
   router.patch('/:id/status', wrap(controller.updateStatus));
   router.delete('/:id', wrap(controller.remove));
