@@ -29,6 +29,41 @@ function createDemoVendorModel() {
 }
 
 /**
+ * IN_MEMORY_DEMO_USERS=true (development and tests only, e.g. the Playwright suite) adds a demo
+ * admin and employee to in-memory mode, with passwords from DEMO_ADMIN_PASSWORD and
+ * DEMO_EMPLOYEE_PASSWORD. It is refused in production and whenever DATABASE_URL is set, so it
+ * can never run against a real database. Returns the seed users, or [] when the option is off.
+ */
+function inMemoryDemoUsers(env) {
+  if (env.IN_MEMORY_DEMO_USERS !== 'true') return [];
+  if (env.NODE_ENV === 'production') {
+    throw new Error('IN_MEMORY_DEMO_USERS is for development and tests; refusing in production');
+  }
+  if (env.DATABASE_URL) {
+    throw new Error('IN_MEMORY_DEMO_USERS only works in in-memory mode; unset DATABASE_URL');
+  }
+  for (const key of ['DEMO_ADMIN_PASSWORD', 'DEMO_EMPLOYEE_PASSWORD']) {
+    if (!env[key]) throw new Error(`IN_MEMORY_DEMO_USERS requires ${key}`);
+  }
+  return [
+    {
+      id: 1,
+      name: 'Demo Admin',
+      email: 'admin@supplyflow.com',
+      role: 'admin',
+      password: env.DEMO_ADMIN_PASSWORD,
+    },
+    {
+      id: 2,
+      name: 'Demo Employee',
+      email: 'employee@supplyflow.com',
+      role: 'employee',
+      password: env.DEMO_EMPLOYEE_PASSWORD,
+    },
+  ];
+}
+
+/**
  * Resolves what createApp needs from the environment.
  * Production (NODE_ENV=production) fails fast without a reachable database or JWT_SECRET.
  * Anywhere else, a missing database falls back to in-memory demo data and a missing
@@ -39,6 +74,8 @@ export async function resolveDependencies(
   { connect = connectPostgres, logger = console } = {},
 ) {
   const production = env.NODE_ENV === 'production';
+  // Checked first: a refused demo-user setup must fail before any database connection.
+  const demoUsers = inMemoryDemoUsers(env);
 
   let models;
   if (env.DATABASE_URL) {
@@ -57,13 +94,15 @@ export async function resolveDependencies(
 
   if (!models) {
     logger.warn(
-      'In-memory mode: 140 sample orders and vendors, no users until you register; nothing persists.',
+      demoUsers.length > 0
+        ? 'In-memory mode: 140 sample orders and vendors, demo admin and employee accounts; nothing persists.'
+        : 'In-memory mode: 140 sample orders and vendors, no users until you register; nothing persists.',
     );
     const orderModel = createInMemoryOrderModel(DEMO_ORDERS);
     const vendorModel = createDemoVendorModel();
     models = {
       orderModel,
-      userModel: createInMemoryUserModel([]),
+      userModel: createInMemoryUserModel(demoUsers),
       vendorModel,
       // Reads the same in-memory orders and vendors, so it reflects changes made in the app.
       dashboardModel: createInMemoryDashboardModel({ orderModel, vendorModel }),
