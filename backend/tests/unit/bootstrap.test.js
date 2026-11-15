@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
+import bcrypt from 'bcryptjs';
 import { resolveDependencies } from '../../bootstrap.js';
+import { createAuthService } from '../../services/authService.js';
 
 const quiet = { log() {}, warn: vi.fn() };
 const dbModels = { orderModel: { kind: 'pg-orders' }, userModel: { kind: 'pg-users' } };
@@ -109,6 +111,89 @@ describe('resolveDependencies', () => {
         { connect: connectOk, logger: quiet },
       );
       expect(deps).toEqual({ ...dbModels, jwtSecret: 'dev' });
+    });
+  });
+
+  // Dev/test-only option (used by the Playwright suite): in-memory mode with a known admin and
+  // employee, so admin flows can run without a database.
+  describe('IN_MEMORY_DEMO_USERS', () => {
+    const DEMO = {
+      IN_MEMORY_DEMO_USERS: 'true',
+      DEMO_ADMIN_PASSWORD: 'e2e-admin-password',
+      DEMO_EMPLOYEE_PASSWORD: 'e2e-employee-password',
+      JWT_SECRET: 'e2e-secret',
+    };
+
+    it('seeds the demo admin and employee with the given passwords', async () => {
+      const { userModel } = await resolveDependencies(DEMO, { logger: quiet });
+
+      const admin = await userModel.findByEmail('admin@supplyflow.com');
+      const employee = await userModel.findByEmail('employee@supplyflow.com');
+      expect(admin).toMatchObject({ name: 'Demo Admin', role: 'admin' });
+      expect(employee).toMatchObject({ name: 'Demo Employee', role: 'employee' });
+      expect(await bcrypt.compare('e2e-admin-password', admin.passwordHash)).toBe(true);
+      expect(await bcrypt.compare('e2e-employee-password', employee.passwordHash)).toBe(true);
+      expect(await bcrypt.compare('e2e-admin-password', employee.passwordHash)).toBe(false);
+    });
+
+    it('lets the seeded accounts log in and new accounts register alongside them', async () => {
+      const deps = await resolveDependencies(DEMO, { logger: quiet });
+      const auth = createAuthService({ userModel: deps.userModel, jwtSecret: deps.jwtSecret });
+
+      const { user } = await auth.login({
+        email: 'admin@supplyflow.com',
+        password: 'e2e-admin-password',
+      });
+      expect(user.role).toBe('admin');
+      const registered = await auth.register({
+        name: 'New Person',
+        email: 'new@example.com',
+        password: 'a-new-password',
+      });
+      expect(registered.user).toMatchObject({ role: 'employee' });
+      expect((await deps.userModel.listPublic()).map((u) => u.id)).toHaveLength(3);
+      expect(new Set((await deps.userModel.listPublic()).map((u) => u.id)).size).toBe(3);
+    });
+
+    it('keeps the in-memory sample orders and vendors', async () => {
+      const { orderModel, vendorModel } = await resolveDependencies(DEMO, { logger: quiet });
+      expect(await orderModel.findAll()).toHaveLength(140);
+      expect(await vendorModel.findAll()).toHaveLength(140);
+    });
+
+    it('is refused in production, before touching any database', async () => {
+      const connect = vi.fn(async () => dbModels);
+      await expect(
+        resolveDependencies(
+          { ...DEMO, NODE_ENV: 'production', DATABASE_URL: 'postgres://db' },
+          { connect, logger: quiet },
+        ),
+      ).rejects.toThrow(/IN_MEMORY_DEMO_USERS.*production/);
+      expect(connect).not.toHaveBeenCalled();
+    });
+
+    it('is refused when DATABASE_URL is set, so it never connects to a real database', async () => {
+      const connect = vi.fn(async () => dbModels);
+      await expect(
+        resolveDependencies({ ...DEMO, DATABASE_URL: 'postgres://db' }, { connect, logger: quiet }),
+      ).rejects.toThrow(/IN_MEMORY_DEMO_USERS.*DATABASE_URL/);
+      expect(connect).not.toHaveBeenCalled();
+    });
+
+    it.each(['DEMO_ADMIN_PASSWORD', 'DEMO_EMPLOYEE_PASSWORD'])('requires %s', async (key) => {
+      await expect(resolveDependencies({ ...DEMO, [key]: '' }, { logger: quiet })).rejects.toThrow(
+        new RegExp(key),
+      );
+    });
+
+    it('leaves in-memory mode without users unless set to "true"', async () => {
+      for (const value of [undefined, '', 'false', '0']) {
+        const { userModel } = await resolveDependencies(
+          { ...DEMO, IN_MEMORY_DEMO_USERS: value },
+          { logger: quiet },
+        );
+        expect(await userModel.listPublic()).toEqual([]);
+      }
     });
   });
 });
