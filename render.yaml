@@ -1,7 +1,8 @@
-# Render Blueprint: the SupplyFlow API (Node web service) and its PostgreSQL 16 database.
-# The service builds from the repository root because the backend imports shared/ (the
-# @supplyflow/shared workspace package). Only the backend and its workspace dependencies are
-# installed. See README.md, "Deployment".
+# Render Blueprint: the SupplyFlow API (Node web service). The database is hosted on Neon, not
+# Render, so this blueprint creates no database; set DATABASE_URL by hand to Neon's pooled
+# connection string. The service builds from the repository root because the backend imports
+# shared/ (the @supplyflow/shared workspace package). Only the backend and its workspace
+# dependencies are installed. See docs/DEPLOYMENT.md.
 services:
   - type: web
     name: supplyflow-api
@@ -17,19 +18,9 @@ services:
         value: production
       - key: NODE_VERSION
         value: '20'
+      # Neon pooled connection string (host contains "-pooler"). Render asks for it on first
+      # deploy; it is never stored in this file.
       - key: DATABASE_URL
-        fromDatabase:
-          name: supplyflow-db
-          property: connectionString
+        sync: false
       - key: JWT_SECRET
         generateValue: true
-      # Only used by the seed script (see README). Render asks for these values on first deploy.
-      - key: SEED_ADMIN_PASSWORD
-        sync: false
-      - key: SEED_EMPLOYEE_PASSWORD
-        sync: false
-
-databases:
-  - name: supplyflow-db
-    plan: free
-    postgresMajorVersion: '16'
