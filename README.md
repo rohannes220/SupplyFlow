@@ -358,7 +358,9 @@ codes:
 - **AI-assisted development.** [`AGENTS.md`](AGENTS.md) gives AI coding agents the project
   context: stack, layering, naming, security rules, requirements and mockup references, the
   status workflow and git conventions. The team used AI agents to write tests and implementation
-  in small, reviewed steps, and reviewed and tested every change before merging.
+  in small, reviewed steps, and reviewed and tested every change before merging. See
+  [How we built SupplyFlow with AI](docs/AI-WORKFLOW.md) for the tools, prompt patterns, TDD
+  examples and the mistakes we caught.
 - **Standards.** The project uses ES modules, Prettier and ESLint. Functions are camelCase,
   React components PascalCase and database tables snake_case. SQL is always parameterized and
   secrets live only in environment variables.
@@ -390,3 +392,5 @@ See the [Partner Log](docs/Partner-Log.md) for more detail.
 - [UI mockups](docs/supplyflow-mockups.png)
 - [Sample data](data/README.md)
 - [AI development instructions](AGENTS.md)
+- [How we built SupplyFlow with AI](docs/AI-WORKFLOW.md): tools, context engineering, AI-assisted
+  TDD, human review and lessons
