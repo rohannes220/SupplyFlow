@@ -343,7 +343,7 @@ codes:
 ## Development workflow
 
 - **Issues and board.** Work is tracked as GitHub issues on the project board, across two Agile
-  sprints.
+  sprints. See [Sprints](docs/SPRINTS.md) for the sprint plans, standups and retrospectives.
 - **Branches.** Use `feature/<issue#>-description`, e.g. `feature/8-order-approval`. Use `fix/…`
   and `docs/…` for fixes and documentation.
 - **Commits.** Use `type(scope): summary (#issue)`, e.g. `feat(orders): add approval (#8)`.
@@ -369,7 +369,8 @@ codes:
 | Purchase orders: create, edit, delete, status workflow, order tracking and filtering (US-06 – US-09) | Rohan    |
 | Order ownership, the fixed-administrator policy and the Users page                                   | Rohan    |
 | Demo order data, architecture and database diagrams                                                  | Rohan    |
-| Authentication: login, registration, JWT, route guards (US-01, US-02)                                | Patrick  |
+| Registration: register endpoint and page (PR #25)                                                    | Rohan    |
+| Authentication: login, JWT, route guards (US-01, US-02)                                              | Patrick  |
 | Vendor management: API, UI, search and filters (US-03 – US-05)                                       | Patrick  |
 | Dashboard metrics (US-10)                                                                            | Patrick  |
 | CI workflow, Swagger/OpenAPI docs, deployment (Vercel, Render, Neon), README                         | Patrick  |
@@ -382,6 +383,7 @@ See the [Partner Log](docs/Partner-Log.md) for more detail.
 - [Deployment guide](docs/DEPLOYMENT.md): Neon, migrations, Render, Vercel, smoke test and
   troubleshooting
 - [Product Requirements Document](docs/PRD.md)
+- [Sprints](docs/SPRINTS.md): sprint plans, issues, standups, retrospectives and partner feedback
 - [UI mockups](docs/supplyflow-mockups.png)
 - [Sample data](data/README.md)
 - [AI development instructions](AGENTS.md)
