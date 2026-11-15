@@ -133,17 +133,17 @@ with graders and reviewers. Anyone can also register a new employee account on t
 
 ## Tech stack
 
-| Layer    | Technology                                                       |
-| -------- | ---------------------------------------------------------------- |
-| Frontend | React 18, React Router 7, Vite 5, Tailwind CSS 3                 |
-| Backend  | Node.js 20, Express 4                                            |
-| Database | PostgreSQL 16 (Neon in production), `pg` driver                  |
-| Auth     | JWT (`jsonwebtoken`), bcrypt password hashing (`bcryptjs`)       |
-| API docs | OpenAPI 3 via `swagger-jsdoc` and `swagger-ui-express`           |
-| Testing  | Vitest, Supertest, React Testing Library                         |
-| Tooling  | pnpm workspaces, ESLint, Prettier                                |
-| CI       | GitHub Actions (lint and tests on every PR and push to `master`) |
-| Hosting  | Vercel (frontend), Render (API), Neon (database)                 |
+| Layer    | Technology                                                                              |
+| -------- | --------------------------------------------------------------------------------------- |
+| Frontend | React 18, React Router 7, Vite 5, Tailwind CSS 3                                        |
+| Backend  | Node.js 20, Express 4                                                                   |
+| Database | PostgreSQL 16 (Neon in production), `pg` driver                                         |
+| Auth     | JWT (`jsonwebtoken`), bcrypt password hashing (`bcryptjs`)                              |
+| API docs | OpenAPI 3 via `swagger-jsdoc` and `swagger-ui-express`                                  |
+| Testing  | Vitest, Supertest, React Testing Library                                                |
+| Tooling  | pnpm workspaces, ESLint, Prettier                                                       |
+| CI/CD    | GitHub Actions: lint, tests, build, E2E, CodeQL, audits, preview and production deploys |
+| Hosting  | Vercel (frontend), Render (API), Neon (database)                                        |
 
 ## Architecture
 
@@ -300,9 +300,12 @@ pnpm --filter supplyflow-backend test:coverage   # backend coverage report (80% 
   TEST_DATABASE_URL=postgres://user:password@localhost:5432/supplyflow_test pnpm test
   ```
 
-- **CI** (`.github/workflows/ci.yml`) runs on every pull request and every push to `master`. It
-  installs with `pnpm install --frozen-lockfile`, starts a PostgreSQL 16 service so the database
-  tests run too, and then runs `pnpm lint` and `pnpm test`.
+- **CI/CD** (`.github/workflows/`) runs on every pull request and every push to `master` in
+  stages: lint → unit and integration tests (with a PostgreSQL 16 service) → frontend build →
+  Playwright E2E. Security checks run alongside: CodeQL, dependency review and `pnpm audit`.
+  Pull requests get a Vercel preview link. A push to `master` that passes every stage deploys
+  the API to Render and the frontend to Vercel. Details and setup are in
+  [the deployment guide](docs/DEPLOYMENT.md#10-cicd-github-actions).
 
 ## API overview
 

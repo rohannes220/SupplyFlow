@@ -1,4 +1,11 @@
-# Lint and test every pull request and every push to master.
+# CI/CD for SupplyFlow. See docs/DEPLOYMENT.md, "CI/CD".
+#
+#   lint ──> test ──> build ──> e2e ───────────────┐
+#   audit ─────────────────────────────────────────┼──> deploy-api ──> deploy-web   (push to master)
+#   dependency-review (PRs only)                   │
+#                     build ──> deploy-preview      (pull requests)
+#
+# CodeQL runs separately in codeql.yml.
 name: CI
 
 on:
@@ -6,18 +13,74 @@ on:
   push:
     branches: [master]
 
-# Read-only token: CI only needs to check out code.
+# Least privilege by default; jobs that need more ask for it.
 permissions:
   contents: read
 
-# A newer push to the same branch or PR cancels the run it replaces.
+# A newer push to the same PR cancels the run it replaces. Runs on master are never cancelled
+# midway, so a production deploy always finishes.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Pinned Vercel CLI, so deploys don't change when a new CLI is released.
+  VERCEL_CLI: vercel@65.8.0
+  API_HEALTH_URL: https://supplyflow-pdiw.onrender.com/api/health
+  PRODUCTION_URL: https://supplyflow-rho.vercel.app
 
 jobs:
+  # ── Stage 1: static checks ───────────────────────────────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: pnpm lint
+
+  audit:
+    name: Security audit (pnpm audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      # Blocking: anything that ships to production (the API's runtime dependencies) must have
+      # no high or critical advisories.
+      - name: Audit production dependencies (fails on high/critical)
+        run: pnpm audit --prod --audit-level high
+      # Report only: development tools (Vitest, Vite) never run in production. Their findings
+      # are listed in the job summary so they can be upgraded deliberately.
+      - name: Audit all dependencies (report only)
+        if: always()
+        continue-on-error: true
+        run: |
+          {
+            echo '## pnpm audit (all dependencies, including development tools)'
+            echo '```'
+            pnpm audit --audit-level high 2>&1 | tail -n 40
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          pnpm audit --audit-level high
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      # Fails the PR if it adds or upgrades to a dependency with a high or critical advisory.
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+
+  # ── Stage 2: unit and integration tests ──────────────────────────────────────────────────
   test:
-    name: Lint and test
+    name: Unit and integration tests
+    needs: lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -32,7 +95,6 @@ jobs:
           POSTGRES_DB: supplyflow_test
         ports:
           - 5432:5432
-        # Wait until the database accepts connections before the steps start.
         options: >-
           --health-cmd "pg_isready -U supplyflow -d supplyflow_test"
           --health-interval 5s
@@ -46,32 +108,204 @@ jobs:
       JWT_SECRET: ci-dummy-jwt-secret-not-used-outside-ci
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      # Vitest in every workspace package: backend (unit, Supertest, PostgreSQL) and frontend
+      # (React Testing Library).
+      - run: pnpm test
 
-      # Same pnpm as local development, so the lockfile format and allowBuilds behave the same.
-      # (Pinned here rather than via package.json "packageManager", which pnpm 12 also records
-      # in pnpm-lock.yaml.)
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+  # ── Stage 3: build ───────────────────────────────────────────────────────────────────────
+  build:
+    name: Build frontend
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter supplyflow-frontend build
+      - uses: actions/upload-artifact@v7
         with:
-          version: 12.18.0
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
 
-      - name: Set up Node 20
-        uses: actions/setup-node@v4
+  # ── Stage 4: end-to-end tests ────────────────────────────────────────────────────────────
+  e2e:
+    name: End-to-end tests (Playwright)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      # Starts its own in-memory API and Vite server (see playwright.config.js); no database.
+      - run: pnpm test:e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
         with:
-          node-version: 20
-          cache: pnpm
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
-      # Fails if pnpm-lock.yaml is out of date with package.json, instead of silently
-      # updating it. esbuild's install script is allowed via allowBuilds in pnpm-workspace.yaml.
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+  # ── Deploy: pull request previews ────────────────────────────────────────────────────────
+  deploy-preview:
+    name: Deploy preview (Vercel)
+    needs: build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.url }}
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      # Secrets are not available to PRs from forks or Dependabot. Skip instead of failing.
+      - name: Check for Vercel secrets
+        id: secrets
+        run: |
+          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Vercel secrets are not available (fork PR or not configured); skipping the preview deploy."
+          fi
 
-      - name: Lint
-        run: pnpm lint
+      - uses: actions/checkout@v7
+        if: steps.secrets.outputs.available == 'true'
+      - uses: ./.github/actions/setup
+        if: steps.secrets.outputs.available == 'true'
 
-      # Runs Vitest in every workspace package: backend (unit, Supertest, PostgreSQL) and
-      # frontend (React Testing Library).
-      - name: Test
-        run: pnpm test
+      - name: Build and deploy to a Vercel preview
+        id: deploy
+        if: steps.secrets.outputs.available == 'true'
+        run: |
+          npx --yes "$VERCEL_CLI" pull --yes --environment=preview --token="$VERCEL_TOKEN"
+          npx --yes "$VERCEL_CLI" build --token="$VERCEL_TOKEN"
+          url=$(npx --yes "$VERCEL_CLI" deploy --prebuilt --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Preview: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      # One comment per PR, updated on every push.
+      - name: Comment the preview URL on the PR
+        if: steps.secrets.outputs.available == 'true'
+        uses: actions/github-script@v9
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        with:
+          script: |
+            const marker = '<!-- supplyflow-vercel-preview -->';
+            const body = [
+              marker,
+              `**Vercel preview:** ${process.env.PREVIEW_URL}`,
+              '',
+              `Built from ${context.payload.pull_request.head.sha.slice(0, 7)}. ` +
+                'API calls go to the production API on Render.',
+            ].join('\n');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+            });
+            const existing = comments.find((c) => c.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+  # ── Deploy: production (push to master, after every stage passes) ────────────────────────
+  deploy-api:
+    name: Deploy API (Render)
+    needs: [lint, audit, test, build, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ env.API_HEALTH_URL }}
+    concurrency:
+      group: deploy-production-api
+      cancel-in-progress: false
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Trigger the Render deploy hook
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::error::RENDER_DEPLOY_HOOK_URL is not set in the production environment."
+            exit 1
+          fi
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL" -o /dev/null
+          echo "Render deploy triggered."
+
+      # Render keeps the previous instance serving until the new one passes its health check,
+      # so wait before polling and keep polling for up to ~12 minutes (free instances also
+      # need time to wake up).
+      - name: Wait for the API to report healthy
+        run: |
+          sleep 60
+          for attempt in $(seq 1 44); do
+            body=$(curl -fsS --max-time 30 "$API_HEALTH_URL" || true)
+            if echo "$body" | grep -q '"status":"ok"'; then
+              echo "API healthy after $attempt attempt(s): $body"
+              exit 0
+            fi
+            echo "Attempt $attempt: not healthy yet; retrying in 15s"
+            sleep 15
+          done
+          echo "::error::$API_HEALTH_URL did not return {\"status\":\"ok\"} in time."
+          exit 1
+
+  deploy-web:
+    name: Deploy frontend (Vercel production)
+    needs: deploy-api
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ env.PRODUCTION_URL }}
+    concurrency:
+      group: deploy-production-web
+      cancel-in-progress: false
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Check for Vercel secrets
+        run: |
+          missing=""
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing in the production environment:$missing"
+            exit 1
+          fi
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - name: Build and deploy to Vercel production
+        run: |
+          npx --yes "$VERCEL_CLI" pull --yes --environment=production --token="$VERCEL_TOKEN"
+          npx --yes "$VERCEL_CLI" build --prod --token="$VERCEL_TOKEN"
+          url=$(npx --yes "$VERCEL_CLI" deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          echo "Production deployment: $url (live at $PRODUCTION_URL)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Check the live site reaches the API
+        run: |
+          curl -fsS --retry 5 --retry-delay 10 --retry-all-errors "$PRODUCTION_URL/api/health" | grep -q '"status":"ok"'
+          echo "$PRODUCTION_URL/api/health is ok"
