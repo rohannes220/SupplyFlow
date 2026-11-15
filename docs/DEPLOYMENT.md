@@ -32,7 +32,8 @@ flowchart LR
 7. [Load the demo data (optional)](#7-load-the-demo-data-optional)
 8. [Smoke test](#8-smoke-test)
 9. [Updating the live site after merges](#9-updating-the-live-site-after-merges)
-10. [Troubleshooting](#10-troubleshooting)
+10. [CI/CD (GitHub Actions)](#10-cicd-github-actions)
+11. [Troubleshooting](#11-troubleshooting)
 
 ## 1. Before you start
 
@@ -156,7 +157,7 @@ your own service URL. It should return `{"status":"ok"}`.
 
 With `NODE_ENV=production`, the API **refuses to start** if `DATABASE_URL` or `JWT_SECRET` is
 missing or the database is unreachable. A failed deploy usually points to one of those (see
-[Troubleshooting](#10-troubleshooting)).
+[Troubleshooting](#11-troubleshooting)).
 
 ## 5. Deploy the frontend on Vercel
 
@@ -282,35 +283,127 @@ Then check in the browser:
 
 ## 9. Updating the live site after merges
 
-When a pull request is merged into `master`, update the live site in this order:
+Once the [CI/CD secrets](#10-cicd-github-actions) are set up, **merging into `master` deploys
+automatically**. After every CI stage passes, GitHub Actions deploys the API to Render, waits
+until it is healthy, and then deploys the frontend to Vercel. What's left to do by hand:
 
-1. **Wait for CI to pass on `master`** (GitHub → Actions).
-2. **New migration files?** If the merge added a file to `backend/db/migrations/`, apply it to
-   Neon _before_ the new API code goes live:
+1. **New migration files?** CI never touches the production database. If a pull request adds a
+   file to `backend/db/migrations/`, apply it to Neon **before merging**, from the PR's branch:
 
    ```bash
-   git checkout master && git pull
    cd backend
    node --env-file=.env.migrate db/migrate.js
    ```
 
-   Re-running the migrations is safe: files that were already applied make no changes.
+   Migrations only add things and are safe to re-run, so the old code keeps working against the
+   new schema until the deploy finishes.
 
-3. **API (Render):** if Auto-Deploy is on (the default), Render redeploys from `master` by
-   itself. Otherwise open the service and click **Manual Deploy → Deploy latest commit**. Watch
-   the logs until the health check passes.
-4. **Frontend (Vercel):** from an up-to-date `master` at the repository root:
+2. **Watch the run.** Open GitHub → **Actions** → the **CI** run for the merge commit. When the
+   **Deploy frontend (Vercel production)** job is green, the release is live.
+3. Run the [smoke test](#8-smoke-test).
+
+**Deploying by hand** (if Actions is unavailable or the secrets aren't set up yet):
+
+- **API:** in Render, open the service and click **Manual Deploy → Deploy latest commit**.
+- **Frontend:** run `vercel --prod` from an up-to-date `master` at the repository root.
+
+## 10. CI/CD (GitHub Actions)
+
+Two workflows in `.github/workflows/` run on every pull request and every push to `master`:
+
+- **`ci.yml`:** the pipeline below.
+- **`codeql.yml`:** CodeQL security analysis of the JavaScript code. It also runs weekly
+  (Mondays 06:17 UTC). Findings appear under **Security → Code scanning** and on pull requests.
+
+Every job sets up the same toolchain through the shared action `.github/actions/setup`: pnpm
+12.18.0, Node 20, and `pnpm install --frozen-lockfile`.
+
+### Pipeline stages
+
+```mermaid
+flowchart LR
+  lint[Lint] --> test[Unit + integration tests<br/>PostgreSQL 16 service] --> build[Build frontend] --> e2e[E2E tests<br/>Playwright, Chromium]
+  audit[pnpm audit]
+  dr[Dependency review<br/>PRs only]
+  build --> preview[Deploy preview<br/>PRs only]
+  e2e --> api[Deploy API: Render<br/>master only]
+  audit --> api
+  api --> web[Deploy frontend: Vercel prod<br/>master only]
+```
+
+| Job                                     | Runs on                                     | What it does                                                                                                                                                                                     | Fails the run when                                                                                                           |
+| --------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Lint**                                | PRs and `master`                            | `pnpm lint`                                                                                                                                                                                      | ESLint reports an error                                                                                                      |
+| **Security audit**                      | PRs and `master`                            | `pnpm audit --prod --audit-level high`, plus a full audit of all dependencies written to the job summary                                                                                         | A production dependency has a high or critical advisory. The full audit is report-only                                       |
+| **Dependency review**                   | PRs                                         | Compares the PR's dependency changes against GitHub's advisory database                                                                                                                          | The PR adds or upgrades to a dependency with a high or critical advisory                                                     |
+| **Unit and integration tests**          | After Lint                                  | `pnpm test` (Vitest, Supertest, React Testing Library), with a throwaway PostgreSQL 16 service so the `*.db.test.js` tests run                                                                   | Any test fails                                                                                                               |
+| **Build frontend**                      | After tests                                 | `pnpm --filter supplyflow-frontend build`; uploads `frontend/dist` as an artifact                                                                                                                | Vite can't build                                                                                                             |
+| **End-to-end tests**                    | After build                                 | `pnpm test:e2e` in Chromium, against an in-memory API with no database. On failure, uploads `playwright-report/` and `test-results/` (traces, screenshots) as the **playwright-report** artifact | Any Playwright test fails                                                                                                    |
+| **Deploy preview**                      | PRs, after build                            | Builds with the Vercel CLI, deploys a preview and comments its URL on the PR (one comment, updated on each push)                                                                                 | A Vercel command fails. **Skipped, not failed,** when the Vercel secrets aren't available, e.g. PRs from forks or Dependabot |
+| **Deploy API (Render)**                 | Push to `master`, after **all** stages pass | Calls the Render deploy hook, then polls `https://supplyflow-pdiw.onrender.com/api/health` for up to ~12 minutes until it returns `{"status":"ok"}`                                              | The secret is missing or the API never becomes healthy                                                                       |
+| **Deploy frontend (Vercel production)** | After the API deploy                        | `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod`, then checks the live site's `/api/health`                                                                             | A secret is missing or a command fails                                                                                       |
+
+Production deploys use their own concurrency groups and are never cancelled midway. On pull
+requests, a newer push cancels the older run. Previews call the **production** API, because
+`frontend/vercel.json` rewrites `/api/*` to Render.
+
+Why the full `pnpm audit` is report-only: at the time of writing, it reports high and critical
+advisories in **development tools only** (Vitest 2, its `tinypool` dependency, and Vite 5). None
+of these run in production. Fixing them means upgrading to Vitest ≥ 3.2.6 and Vite ≥ 6.4.4.
+After those upgrades, the full audit can become blocking.
+
+### Environments
+
+The deploy jobs run in two GitHub **environments**. Each environment holds its own secrets and
+records a deployment history with links on the repository's front page.
+
+| Environment  | Used by                                | Secrets                                                                        |
+| ------------ | -------------------------------------- | ------------------------------------------------------------------------------ |
+| `preview`    | Deploy preview (PRs)                   | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`                           |
+| `production` | Deploy API, Deploy frontend (`master`) | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `RENDER_DEPLOY_HOOK_URL` |
+
+### Required secrets and where to get them
+
+| Secret                   | Where to find it                                                                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `VERCEL_TOKEN`           | Vercel → your avatar → **Account Settings → Tokens → Create**. Scope it to the team that owns the project and give it an expiry date             |
+| `VERCEL_ORG_ID`          | The `orgId` value in `.vercel/project.json` after `vercel link` (step 5). It's also the Team ID in Vercel → Team **Settings → General**          |
+| `VERCEL_PROJECT_ID`      | The `projectId` value in `.vercel/project.json`. It's also in Vercel → Project **Settings → General → Project ID**                               |
+| `RENDER_DEPLOY_HOOK_URL` | Render → the `supplyflow-api` service → **Settings → Deploy Hook** → copy the URL. Treat it like a password: anyone with it can trigger a deploy |
+
+None of these are ever printed in logs; GitHub masks secret values. CI needs no database
+credentials, and the database is never reachable from GitHub Actions.
+
+### Setting it up
+
+1. **Create the environments.** In GitHub, go to the repository's **Settings → Environments →
+   New environment**. Create `preview`, then `production`.
+2. **Protect production** (recommended). In the `production` environment, under **Deployment
+   branches and tags**, choose **Selected branches and tags** and add `master`. You can
+   optionally add **Required reviewers**, so someone approves each production deploy.
+3. **Add the secrets.** In each environment, click **Add environment secret** and enter the
+   secrets from the table above. Put the three Vercel secrets in both environments, and
+   `RENDER_DEPLOY_HOOK_URL` in `production` only. If you use the GitHub CLI, run `gh secret set`
+   without a value, so the secret is typed at a prompt and stays out of your shell history:
 
    ```bash
-   vercel --prod
+   gh secret set VERCEL_TOKEN --env production
+   gh secret set RENDER_DEPLOY_HOOK_URL --env production
    ```
 
-   If the Vercel project is connected to the GitHub repository, it also deploys automatically on
-   every push to `master`.
+4. **Turn off the platforms' own auto-deploys**, so production changes only after CI passes:
+   - **Render:** service **Settings → Build & Deploy → Auto-Deploy → Off**. Otherwise every push
+     to `master` deploys twice, once before the tests have finished.
+   - **Vercel:** if the project is connected to the GitHub repository, its Git integration also
+     deploys every push and PR. Disconnect it under **Settings → Git**, or keep it for previews
+     only and rely on CI for production.
+5. **Enable code scanning results.** CodeQL uploads automatically for this public repository.
+   Check **Settings → Code security** to confirm that the dependency graph is enabled; it's
+   required by the Dependency review job.
+6. Open a test pull request. The run should show every stage and a **Vercel preview** comment.
+   After merging, the run on `master` should end with both deploy jobs green.
 
-5. Run the [smoke test](#8-smoke-test).
-
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 ### The first request is very slow, or the app shows a load error
 

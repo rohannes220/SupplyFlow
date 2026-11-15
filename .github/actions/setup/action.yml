@@ -1,0 +1,24 @@
+# Shared by every CI job: the same pnpm and Node as local development, then a frozen install.
+name: Set up pnpm, Node and dependencies
+description: Installs pnpm 12.18.0 and Node 20, then runs pnpm install --frozen-lockfile.
+runs:
+  using: composite
+  steps:
+    # Pinned here rather than via package.json "packageManager", which pnpm 12 also records in
+    # pnpm-lock.yaml.
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v6
+      with:
+        version: 12.18.0
+
+    - name: Set up Node 20
+      uses: actions/setup-node@v7
+      with:
+        node-version: 20
+        cache: pnpm
+
+    # Fails if pnpm-lock.yaml is out of date with package.json instead of silently updating it.
+    # Install scripts are limited by allowBuilds in pnpm-workspace.yaml.
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
