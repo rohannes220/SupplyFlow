@@ -241,5 +241,7 @@ In Patrick's words:
 
 ### Rohan on Patrick
 
-> **TODO (Rohan):** Write your feedback on Patrick here: strengths and one or two things to
-> improve.
+In Rohan's words (source: Rohan's sprint notes (Nov 2026)):
+
+- **Sprint 1:** "Patrick did a good job implementing vendor functionality."
+- **Sprint 2:** "Patrick contributed to automated testing and deployment."
